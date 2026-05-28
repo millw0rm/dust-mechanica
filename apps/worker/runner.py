@@ -6,6 +6,7 @@ from packages.domain.schemas.common import JobStatus
 from packages.domain.services.pipeline import run_generation_pipeline
 from packages.domain.schemas.requirements import RequirementInput
 from packages.reporting.explain import build_explainability_report
+from apps.api.settings import get_settings
 
 logger = logging.getLogger("dust.worker")
 
@@ -20,7 +21,8 @@ def process_one_job(repo: JobRepository):
     try:
         req = RequirementInput(**job["normalized_input"])
         repo.update(job_id, progress=0.5)
-        result = run_generation_pipeline(req)
+        settings = get_settings()
+        result = run_generation_pipeline(req, sim_enabled=settings.sim_adapter_enabled, cad_enabled=settings.cad_adapter_enabled)
         if repo.get(job_id).get("cancelled"):
             repo.update(job_id, status=JobStatus.failed.value, progress=1.0, error="cancelled")
             return True

@@ -28,6 +28,9 @@ class ScoreBreakdown(BaseModel):
     cost: ScoreDimension
     compactness: ScoreDimension
     performance_margin: ScoreDimension
+    lead_time_impact: ScoreDimension | None = None
+    sourcing_risk: ScoreDimension | None = None
+    engineering_fit: ScoreDimension | None = None
 
 
 class Robustness(BaseModel):
@@ -36,6 +39,8 @@ class Robustness(BaseModel):
 
 
 class Candidate(BaseModel):
+    simulation_summary: dict | None = None
+    cad_artifact_ref: dict | None = None
     id: str
     components: Components
     performance: Performance

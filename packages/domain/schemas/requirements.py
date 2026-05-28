@@ -18,6 +18,7 @@ class Constraints(BaseModel):
 
 
 class RequirementInput(BaseModel):
+    decision_objective: str = "balanced"
     topology: str = "belt-driven-linear-axis"
     functional_targets: FunctionalTargets
     constraints: Constraints
