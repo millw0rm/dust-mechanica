@@ -49,6 +49,19 @@ The system should accept guided-form + natural-language requirements across:
 7. **Verification & Sign-off Layer**
    - Confidence score, uncertainty bounds, human sign-off gates
 
+
+## AI Agent Architecture (Planned)
+Dust Mechanica will use a supervised multi-agent pattern with strict guardrails:
+- Requirement Interpreter Agent
+- Concept Synthesis Agent
+- Simulation Orchestrator Agent
+- Optimization Agent
+- Verification & Safety Agent
+- Report Generator Agent
+
+Design decisions remain human-supervised with mandatory approval gates.
+See `docs/ai-system-design.md` for role definitions, orchestration flow, guardrails, and traceability model.
+
 ## Proposed Tech Stack
 - Backend: Python + FastAPI
 - Data models: Pydantic
