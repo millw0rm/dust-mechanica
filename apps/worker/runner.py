@@ -13,11 +13,13 @@ from apps.api.settings import get_settings
 logger = logging.getLogger("dust.worker")
 
 
-def process_one_job(repo: JobRepository):
-    job_id = repo.next_queued()
+def process_one_job(repo: JobRepository, job_id: str | None = None):
+    job_id = job_id or repo.next_queued()
     if not job_id:
         return False
     job = repo.get(job_id)
+    if not job or job["status"] != JobStatus.queued.value:
+        return False
     repo.update(job_id, status=JobStatus.running.value, progress=0.1)
     logger.info(json.dumps({"event": "job_started", "job_id": job_id, "trace_id": job["trace_id"], "request_id": job["request_id"]}))
     try:

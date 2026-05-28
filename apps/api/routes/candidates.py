@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Header, HTTPException
+from fastapi import APIRouter, Body, Header, HTTPException, Query
 import sqlite3
 from pydantic import BaseModel, Field
 from packages.domain.repositories.jobs import JobRepository
@@ -7,6 +7,7 @@ from packages.domain.schemas.responses import CandidateGenerationResponse, JobDe
 from packages.domain.schemas.common import JobStatus
 from packages.domain.services.pipeline import run_generation_pipeline
 from packages.engineering.adapters.toolchain.executor import ToolchainExecutionService
+from apps.worker.runner import process_one_job
 
 router = APIRouter(prefix="/v1", tags=["candidates"])
 repo = JobRepository()
@@ -26,16 +27,29 @@ class ToolchainRunRequest(BaseModel):
     selected_tools: list[str] = Field(min_length=1)
 
 
+def _coerce_generate_request(payload: dict, async_mode: bool | None) -> GenerateRequest:
+    if "requirement" in payload:
+        data = dict(payload)
+    else:
+        data = {"requirement": payload}
+    if async_mode is not None:
+        data["async_mode"] = async_mode
+    return GenerateRequest.model_validate(data)
+
+
 @router.post('/candidates/generate')
-def generate(payload: GenerateRequest, x_request_id: str | None = Header(default=None), x_trace_id: str | None = Header(default=None), idempotency_key: str | None = Header(default=None)):
-    if payload.async_mode:
+def generate(payload: dict = Body(...), async_mode: bool | None = Query(default=None), x_request_id: str | None = Header(default=None), x_trace_id: str | None = Header(default=None), idempotency_key: str | None = Header(default=None)):
+    request = _coerce_generate_request(payload, async_mode)
+    if request.async_mode:
         existing = repo.find_by_idempotency_key(idempotency_key or x_request_id or "")
         if existing:
             return {"schema_version": "2.0", "job_id": existing["id"], "status": existing["status"], "idempotent_replay": True}
         v = {"issues": [], "missing": [], "conflicts": []}
-        job_id = repo.create(payload.requirement.model_dump(), v, x_trace_id or "", idempotency_key or x_request_id or "")
-        return {"schema_version": "2.0", "job_id": job_id, "status": "queued"}
-    result = run_generation_pipeline(payload.requirement, allowed_topologies=payload.allowed_topologies, excluded_topologies=payload.excluded_topologies, explain_topology_selection=payload.explain_topology_selection, toolchain_enabled=payload.toolchain_enabled)
+        job_id = repo.create(request.requirement.model_dump(), v, x_trace_id or "", idempotency_key or x_request_id or "")
+        process_one_job(repo, job_id)
+        job = repo.get(job_id) or {"status": "queued"}
+        return {"schema_version": "2.0", "job_id": job_id, "status": job["status"]}
+    result = run_generation_pipeline(request.requirement, allowed_topologies=request.allowed_topologies, excluded_topologies=request.excluded_topologies, explain_topology_selection=request.explain_topology_selection, toolchain_enabled=request.toolchain_enabled)
     return CandidateGenerationResponse(**result)
 
 
@@ -46,6 +60,14 @@ def job_status(id: str):
         raise HTTPException(status_code=404, detail="job not found")
     result = CandidateGenerationResponse(**job["result"]) if job.get("result") else None
     return JobDetailResponse(schema_version="2.0", id=id, status=job["status"], progress=job["progress"], created_at=job["created_at"], updated_at=job["updated_at"], completed_at=job["completed_at"], error=job["error"], result=result, review=job.get("review"), report=job.get("report"))
+
+
+@router.get('/jobs/{id}/report')
+def job_report(id: str):
+    job = repo.get(id)
+    if not job:
+        raise HTTPException(404, "job not found")
+    return {"schema_version": "2.0", "job_id": id, "report": job.get("report")}
 
 
 @router.post('/jobs/{id}/approve')
@@ -127,7 +149,7 @@ def submit_feedback(id: str, payload: FeedbackRequest):
     job = repo.get(id)
     if not job:
         raise HTTPException(404, "job not found")
-    allowed_states = {JobStatus.approved.value, JobStatus.completed.value}
+    allowed_states = {JobStatus.approved.value, JobStatus.completed.value, JobStatus.awaiting_review.value}
     if job["status"] not in allowed_states:
         raise HTTPException(
             status_code=409,

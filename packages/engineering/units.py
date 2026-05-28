@@ -1,6 +1,8 @@
 from packages.engineering.exceptions import UnitConversionError
 
 CONVERSIONS = {
+    ("m", "m"): 1.0,
+    ("mm", "mm"): 1.0,
     ("mm", "m"): 0.001,
     ("m", "mm"): 1000.0,
     ("kg", "kg"): 1.0,
@@ -8,6 +10,8 @@ CONVERSIONS = {
     ("kg", "g"): 1000.0,
     ("mm/s", "m/s"): 0.001,
     ("m/s", "mm/s"): 1000.0,
+    ("m/s", "m/s"): 1.0,
+    ("mm/s", "mm/s"): 1.0,
 }
 
 

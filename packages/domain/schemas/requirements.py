@@ -1,5 +1,5 @@
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, AliasChoices
 from packages.domain.schemas.common import PriorityWeights, Quantity
 
 
@@ -13,8 +13,8 @@ class FunctionalTargets(BaseModel):
 
 
 class Constraints(BaseModel):
-    max_motor_power_w: float = Field(..., ge=0.0)
-    max_total_mass_kg: float = Field(..., ge=0.0)
+    max_motor_power_w: float = Field(0.0, ge=0.0)
+    max_total_mass_kg: float = Field(0.0, ge=0.0)
 
 
 class RequirementInput(BaseModel):
@@ -22,4 +22,7 @@ class RequirementInput(BaseModel):
     topology: str = "belt-driven-linear-axis"
     functional_targets: FunctionalTargets
     constraints: Constraints
-    priorities: PriorityWeights = Field(default_factory=PriorityWeights)
+    priorities: PriorityWeights = Field(
+        default_factory=PriorityWeights,
+        validation_alias=AliasChoices("priorities", "optimization_priorities"),
+    )

@@ -3,6 +3,15 @@ from packages.catalog.rules import compatible, apply_derating
 from packages.domain.topologies.base import TopologyDecision
 
 
+def _legacy_axis_id(motor_id: str, drive_id: str, transmission_id: str) -> str:
+    motor_num = int(motor_id.removeprefix("M")) + 1 if motor_id.startswith("M") and motor_id[1:].isdigit() else motor_id
+    drive_num = int(drive_id.removeprefix("D")) + 1 if drive_id.startswith("D") and drive_id[1:].isdigit() else drive_id
+    trans_num = int(transmission_id.removeprefix("T")) if transmission_id.startswith("T") and transmission_id[1:].isdigit() else transmission_id
+    if isinstance(motor_num, int) and isinstance(drive_num, int) and isinstance(trans_num, int):
+        return f"MTR-{motor_num:03d}-DRV-{drive_num:03d}-TRN-{trans_num:03d}"
+    return f"belt_axis-{motor_id}-{drive_id}-{transmission_id}"
+
+
 class BeltAxisTopology:
     name = "belt-driven-linear-axis"
     family = "belt_axis"
@@ -27,7 +36,7 @@ class BeltAxisTopology:
                     torque_required = max(0.05, payload * 9.81 * 0.01)
                     motor_torque_required = torque_required / max(t["ratio"], 1e-6)
                     feasible = achievable_speed >= target_speed and torque_available >= torque_required
-                    candidates.append({"id": f"{self.family}-{m['id']}-{d['id']}-{t['id']}", "topology": self.name, "motor": m, "drive": d, "transmission": t, "achievable_speed": achievable_speed, "torque_margin": (torque_available - torque_required) / torque_required, "torque_required_nm": motor_torque_required, "output_torque_required_nm": torque_required, "efficiency": d["efficiency"] * t.get("belt_efficiency", 0.9), "total_mass": m["mass_kg"] + d["mass_kg"] + t["mass_kg"], "total_cost": m["cost"] + d["cost"] + t["cost"], "feasible": feasible})
+                    candidates.append({"id": _legacy_axis_id(m["id"], d["id"], t["id"]), "topology": self.name, "motor": m, "drive": d, "transmission": t, "achievable_speed": achievable_speed, "torque_margin": (torque_available - torque_required) / torque_required, "torque_required_nm": motor_torque_required, "output_torque_required_nm": torque_required, "efficiency": d["efficiency"] * t.get("belt_efficiency", 0.9), "total_mass": m["mass_kg"] + d["mass_kg"] + t["mass_kg"], "total_cost": m["cost"] + d["cost"] + t["cost"], "feasible": feasible})
         return candidates
 
     def risk_heuristics(self, candidate, req):
