@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Header, HTTPException
 import sqlite3
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from packages.domain.repositories.jobs import JobRepository
 from packages.domain.schemas.requirements import RequirementInput
 from packages.domain.schemas.responses import CandidateGenerationResponse, JobDetailResponse, FeedbackRequest, TelemetrySlicesResponse, TelemetryDriftResponse
 from packages.domain.schemas.common import JobStatus
 from packages.domain.services.pipeline import run_generation_pipeline
+from packages.engineering.adapters.toolchain.executor import ToolchainExecutionService
 
 router = APIRouter(prefix="/v1", tags=["candidates"])
 repo = JobRepository()
@@ -18,6 +19,11 @@ class GenerateRequest(BaseModel):
     excluded_topologies: list[str] | None = None
     explain_topology_selection: bool = False
     toolchain_enabled: bool = True
+
+
+class ToolchainRunRequest(BaseModel):
+    candidate_id: str
+    selected_tools: list[str] = Field(min_length=1)
 
 
 @router.post('/candidates/generate')
@@ -87,6 +93,33 @@ def design_review_package(id: str):
         "approval_status": job.get("review", {}).get("status"),
         "reviewer_notes": job.get("review"),
     }
+
+
+@router.post('/jobs/{id}/toolchain/run')
+def run_job_toolchain(id: str, payload: ToolchainRunRequest):
+    job = repo.get(id)
+    if not job:
+        raise HTTPException(404, "job not found")
+    result = job.get("result")
+    if not result:
+        raise HTTPException(409, "job has no candidate result")
+    candidates = result.get("candidates", [])
+    candidate = next((item for item in candidates if item.get("id") == payload.candidate_id), None)
+    if candidate is None:
+        raise HTTPException(404, "candidate not found")
+    if not (candidate.get("toolchain_results") or {}).get("tool_runs"):
+        raise HTTPException(409, "candidate has no toolchain tool_runs")
+
+    execution = ToolchainExecutionService().run_selected_tools(candidate=candidate, selected_tools=payload.selected_tools)
+    candidate.setdefault("toolchain_results", {})["latest_execution"] = execution
+    candidate["toolchain_artifact_uris"] = execution["artifact_uris"]
+
+    report = job.get("report") or {}
+    report.setdefault("toolchain_runs", [])
+    report["toolchain_runs"].append(execution)
+    repo.update(id, result=result, report=report)
+
+    return {"schema_version": "2.1", "job_id": id, **execution}
 
 
 @router.post('/jobs/{id}/feedback')
