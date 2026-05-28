@@ -4,12 +4,12 @@ from dataclasses import dataclass
 import json
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 
 @dataclass(frozen=True)
 class LocalArtifactStore:
-    """Artifact store backed by a deterministic local filesystem layout."""
+    """Filesystem-backed artifact store using stable `artifact://...` URIs."""
 
     root: Path | str = Path("artifacts")
 
@@ -41,10 +41,10 @@ class LocalArtifactStore:
         parsed = urlparse(uri)
         if parsed.scheme != "artifact" or not parsed.netloc:
             raise ValueError(f"Unsupported artifact URI: {uri}")
-        parts = [part for part in parsed.path.split("/") if part]
+        parts = [unquote(part) for part in parsed.path.split("/") if part]
         if len(parts) != 3:
             raise ValueError(f"Artifact URI must be artifact://<namespace>/<fingerprint>/<tool>/<name>: {uri}")
-        namespace = parsed.netloc
+        namespace = unquote(parsed.netloc)
         fingerprint, tool, name = parts
         return self.path_for(namespace, fingerprint, tool, name)
 

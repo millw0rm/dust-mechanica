@@ -28,6 +28,17 @@ def test_local_artifact_store_uses_deterministic_toolchain_paths(tmp_path):
     assert json.loads(store.get(uri)) == payload
 
 
+def test_local_artifact_store_round_trips_binary_payloads(tmp_path):
+    store = LocalArtifactStore(tmp_path / "artifacts")
+    payload = b"\x00dust-mechanica\xffbinary"
+
+    uri = store.put_bytes("toolchain", "abc123", "cadquery", "placeholder.step", payload)
+
+    assert uri == "artifact://toolchain/abc123/cadquery/placeholder.step"
+    assert store.path_for_uri(uri) == tmp_path / "artifacts" / "toolchain" / "abc123" / "cadquery" / "placeholder.step"
+    assert store.get(uri) == payload
+
+
 def test_toolchain_adapter_persists_json_artifacts_with_stable_uris(tmp_path):
     store = LocalArtifactStore(tmp_path / "artifacts")
     candidate = {
