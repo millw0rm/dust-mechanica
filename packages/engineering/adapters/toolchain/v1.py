@@ -5,6 +5,8 @@ import hashlib
 import json
 from typing import Any
 
+from packages.engineering.adapters.artifacts.base import ArtifactStore
+
 
 @dataclass(frozen=True)
 class ToolCapability:
@@ -93,6 +95,7 @@ class OpenSourceToolchainAdapterV1:
     """
 
     adapter_version: str = "toolchain-v1"
+    artifact_store: ArtifactStore | None = None
 
     def run(
         self,
@@ -238,24 +241,44 @@ class OpenSourceToolchainAdapterV1:
     ) -> dict:
         capability = next(tool for tool in TOOL_CAPABILITIES if tool.name == tool_name)
         slug = self._slug(tool_name)
-        return {
+        run_feed = {
+            "input_fingerprint": fingerprint,
+            "topology": feed["candidate"].get("topology"),
+            "components": feed["candidate"].get("components"),
+            "performance": feed["candidate"].get("performance"),
+            "physics_margins": feed.get("physics_summary", {}).get("margins", {}),
+        }
+        artifact_uris = {
+            "directory": f"artifact://toolchain/{fingerprint}/{slug}",
+            "feed": self._artifact_uri(fingerprint, slug, "feed.json"),
+            "runner_contract": self._artifact_uri(fingerprint, slug, "runner-contract.json"),
+        }
+        contract = {
             "tool": tool_name,
             "category": capability.category,
             "status": status,
             "priority": priority,
             "instruction": instruction,
-            "feed": {
-                "input_fingerprint": fingerprint,
-                "topology": feed["candidate"].get("topology"),
-                "components": feed["candidate"].get("components"),
-                "performance": feed["candidate"].get("performance"),
-                "physics_margins": feed.get("physics_summary", {}).get("margins", {}),
-            },
+            "feed": run_feed,
             "expected_outputs": list(capability.output_artifacts),
-            "artifact_uri": f"artifact://toolchain/{fingerprint}/{slug}",
+            "artifact_uri": artifact_uris["directory"],
+            "artifact_uris": artifact_uris,
             "open_source": capability.open_source,
             "maturity": capability.maturity,
         }
+        if self.artifact_store is not None:
+            artifact_uris["feed"] = self.artifact_store.put_json("toolchain", fingerprint, slug, "feed.json", run_feed)
+            artifact_uris["runner_contract"] = self.artifact_store.put_json(
+                "toolchain",
+                fingerprint,
+                slug,
+                "runner-contract.json",
+                {key: value for key, value in contract.items() if key != "artifact_uris"},
+            )
+        return contract
+
+    def _artifact_uri(self, fingerprint: str, slug: str, name: str) -> str:
+        return f"artifact://toolchain/{fingerprint}/{slug}/{name}"
 
     def _candidate_payload(self, candidate: dict) -> dict:
         return {
