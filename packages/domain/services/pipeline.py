@@ -10,6 +10,7 @@ from packages.domain.topologies.registry import get_topology
 from packages.domain.services.topology_selector import select_topologies
 from packages.engineering.adapters.simulation.v1 import SimulationAdapterV1
 from packages.engineering.adapters.cad.v1 import CADAdapterV1
+from packages.domain.physics.evaluate import evaluate_candidate_physics
 
 
 def compute_confidence(assumption_count: int, low_margin: bool, sparse_data: bool) -> Confidence:
@@ -48,11 +49,20 @@ def run_generation_pipeline(req, *, allowed_topologies=None, excluded_topologies
                 risks.append(RiskFlag(code="SPEED_HEADROOM_LOW", message="Near speed limit", severity="medium"))
             r["lead_time_days"] = r["motor"].get("lead_time_days", 21)
             r["sourcing_risk"] = comp_rules["penalty"]
+            physics = evaluate_candidate_physics(
+                {
+                    "achievable_speed": r["achievable_speed"],
+                    "torque_margin": r["torque_margin"],
+                    "efficiency": r["efficiency"],
+                    "total_mass": r["total_mass"],
+                },
+                normalized,
+            )
             score = score_candidate(r, normalized.priorities, getattr(req, "decision_objective", "balanced"))
             confidence = compute_confidence(1, r["torque_margin"] < 0.2, not r["motor"].get("vendor"))
             sim_sum = sim.run({"duty_cycle": normalized.functional_targets.duty_cycle, "torque_margin": r["torque_margin"], "achievable_speed": r["achievable_speed"], "required_speed": normalized.functional_targets.max_speed.value}) if sim else {"status": "skipped", "warning": "disabled"}
             cad_ref = cad.build({"components": {"motor": r["motor"]["id"], "drive": r["drive"]["id"], "transmission": r["transmission"]["id"]}}) if cad else {"status": "skipped", "warning": "disabled"}
-            out.append(Candidate(id=r["id"], components=Components(motor_id=r["motor"]["id"], drive_id=r["drive"]["id"], transmission_id=r["transmission"]["id"]), performance=Performance(achievable_speed_mps=r["achievable_speed"], torque_margin=r["torque_margin"], est_efficiency=r["efficiency"], est_total_mass_kg=r["total_mass"]), score_breakdown=ScoreBreakdown(**score), risk_flags=risks, confidence=confidence, feasible=True, simulation_summary=sim_sum, cad_artifact_ref={"artifact_id": cad_ref.get("artifact_id"), "artifact_uri": cad_ref.get("artifact_uri"), "status": cad_ref.get("status")}))
+            out.append(Candidate(id=r["id"], components=Components(motor_id=r["motor"]["id"], drive_id=r["drive"]["id"], transmission_id=r["transmission"]["id"]), performance=Performance(achievable_speed_mps=r["achievable_speed"], torque_margin=r["torque_margin"], est_efficiency=r["efficiency"], est_total_mass_kg=r["total_mass"]), score_breakdown=ScoreBreakdown(**score), risk_flags=risks, confidence=confidence, feasible=True, simulation_summary=sim_sum, cad_artifact_ref={"artifact_id": cad_ref.get("artifact_id"), "artifact_uri": cad_ref.get("artifact_uri"), "status": cad_ref.get("status")}, physics_summary=physics.summary, physics_passed=physics.passed, physics_margins=physics.margins.model_dump(), physics_warnings=[w.model_dump() for w in physics.warnings]))
     ranked = rank_candidates([c.model_dump() for c in out])
     robustness = assess_ranking_robustness(ranked, normalized.priorities, bound=policy.weight_perturbation.bound, samples=policy.weight_perturbation.samples)
     for cand in ranked:
