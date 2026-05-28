@@ -40,13 +40,19 @@ class CadQueryRunner:
                 "artifact_uris": {},
                 "warnings": ["CadQueryRunner only accepts tool_run contracts for tool='CadQuery'."],
                 "runner_version": self.runner_version,
+                "metrics": {},
             }
 
-        feed = tool_run.get("feed") or {}
+        feed = tool_run.get("feed") if isinstance(tool_run.get("feed"), dict) else {}
         fingerprint = self._fingerprint(tool_run, feed)
         envelope, envelope_warnings = self._envelope(feed)
         components = self._components(feed)
-        model = self._model_payload(envelope, components, feed)
+        performance = self._performance(feed)
+        model = self._model_payload(envelope, components, performance, feed)
+        step_payload = self._step_bytes(model)
+        stl_payload = self._stl_bytes(model)
+        source_payload = self._source_bytes(model)
+        metrics = self._metrics(model, step_payload, stl_payload, source_payload)
 
         artifact_uris = {
             "step": self.artifact_store.put_bytes(
@@ -54,21 +60,21 @@ class CadQueryRunner:
                 fingerprint,
                 "cadquery",
                 "placeholder.step",
-                self._step_bytes(model),
+                step_payload,
             ),
             "stl": self.artifact_store.put_bytes(
                 "toolchain",
                 fingerprint,
                 "cadquery",
                 "placeholder.stl",
-                self._stl_bytes(model),
+                stl_payload,
             ),
             "source": self.artifact_store.put_bytes(
                 "toolchain",
                 fingerprint,
                 "cadquery",
                 "placeholder_model.py",
-                self._source_bytes(model),
+                source_payload,
             ),
             "manifest": self.artifact_store.put_json(
                 "toolchain",
@@ -88,6 +94,7 @@ class CadQueryRunner:
             "artifact_uris": artifact_uris,
             "warnings": warnings,
             "runner_version": self.runner_version,
+            "metrics": metrics,
         }
 
     def _fingerprint(self, tool_run: dict[str, Any], feed: dict[str, Any]) -> str:
@@ -155,10 +162,26 @@ class CadQueryRunner:
         components = feed.get("components") if isinstance(feed.get("components"), dict) else {}
         return {key: str(value) for key, value in components.items() if value not in (None, "")}
 
+    def _performance(self, feed: dict[str, Any]) -> dict[str, float]:
+        performance = feed.get("performance") if isinstance(feed.get("performance"), dict) else {}
+        normalized = {}
+        for key in (
+            "achievable_speed_mps",
+            "torque_margin",
+            "efficiency",
+            "total_mass_kg",
+            "est_total_mass_kg",
+        ):
+            value = self._number(performance.get(key))
+            if value is not None:
+                normalized[key] = round(value, 6)
+        return normalized
+
     def _model_payload(
         self,
         envelope: PlaceholderEnvelope,
         components: dict[str, str],
+        performance: dict[str, float],
         feed: dict[str, Any],
     ) -> dict[str, Any]:
         component_keys = sorted(components)
@@ -186,6 +209,7 @@ class CadQueryRunner:
                 "height": round(envelope.height_mm, 3),
             },
             "components": components,
+            "performance": performance,
             "features": {
                 "base_block": {
                     "origin_mm": [0.0, round(-envelope.width_mm / 2.0, 3), 0.0],
@@ -194,6 +218,34 @@ class CadQueryRunner:
                 "component_pads": pads,
             },
         }
+
+    def _metrics(
+        self,
+        model: dict[str, Any],
+        step_payload: bytes,
+        stl_payload: bytes,
+        source_payload: bytes,
+    ) -> dict[str, Any]:
+        dimensions = model["envelope_mm"]
+        component_pads = model["features"]["component_pads"]
+        volume_mm3 = dimensions["length"] * dimensions["width"] * dimensions["height"]
+        surface_area_mm2 = 2.0 * (
+            dimensions["length"] * dimensions["width"]
+            + dimensions["length"] * dimensions["height"]
+            + dimensions["width"] * dimensions["height"]
+        )
+        metrics = {
+            "component_count": len(model["components"]),
+            "component_pad_count": len(component_pads),
+            "envelope_volume_mm3": round(volume_mm3, 3),
+            "envelope_surface_area_mm2": round(surface_area_mm2, 3),
+            "step_bytes": len(step_payload),
+            "stl_bytes": len(stl_payload),
+            "source_bytes": len(source_payload),
+        }
+        for key, value in model.get("performance", {}).items():
+            metrics[key] = value
+        return metrics
 
     def _step_bytes(self, model: dict[str, Any]) -> bytes:
         dimensions = model["envelope_mm"]
