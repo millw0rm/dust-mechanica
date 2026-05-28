@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Header, HTTPException
+import sqlite3
 from pydantic import BaseModel
 from packages.domain.repositories.jobs import JobRepository
 from packages.domain.schemas.requirements import RequirementInput
@@ -92,7 +93,33 @@ def submit_feedback(id: str, payload: FeedbackRequest):
     job = repo.get(id)
     if not job:
         raise HTTPException(404, "job not found")
-    repo.add_feedback(id, payload.model_dump())
+    allowed_states = {JobStatus.approved.value, JobStatus.completed.value}
+    if job["status"] not in allowed_states:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "feedback not allowed for current job status",
+                "job_id": id,
+                "current_status": job["status"],
+                "allowed_statuses": sorted(allowed_states),
+            },
+        )
+    if not repo.is_feedback_window_open(job):
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "feedback window expired",
+                "job_id": id,
+                "completed_at": job.get("completed_at"),
+                "window_days": repo.feedback_window_days(),
+            },
+        )
+    try:
+        repo.add_feedback(id, payload.model_dump())
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail={"message": str(exc), "job_id": id}) from exc
+    except sqlite3.IntegrityError as exc:
+        raise HTTPException(status_code=409, detail={"message": "duplicate feedback", "job_id": id}) from exc
     return {"job_id": id, "recorded": True}
 
 

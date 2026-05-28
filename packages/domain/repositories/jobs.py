@@ -1,8 +1,9 @@
 import json
+import os
 import sqlite3
 import threading
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from packages.domain.schemas.common import JobStatus
 
 
@@ -40,6 +41,10 @@ class JobRepository:
                 """create table if not exists feedback (
                 id integer primary key autoincrement,
                 job_id text not null,
+                reviewer_id text,
+                source_id text,
+                context_tag text,
+                observed_at text,
                 rating integer,
                 achieved_motion integer,
                 achieved_force integer,
@@ -48,6 +53,16 @@ class JobRepository:
                 created_at text,
                 foreign key(job_id) references jobs(id)
                 )"""
+            )
+            feedback_cols = [r[1] for r in c.execute("pragma table_info(feedback)").fetchall()]
+            for add in [("reviewer_id", "text"), ("source_id", "text"), ("context_tag", "text"), ("observed_at", "text")]:
+                if add[0] not in feedback_cols:
+                    c.execute(f"alter table feedback add column {add[0]} {add[1]}")
+            c.execute(
+                "create unique index if not exists uq_feedback_job_reviewer on feedback(job_id, reviewer_id) where reviewer_id is not null"
+            )
+            c.execute(
+                "create unique index if not exists uq_feedback_job_source on feedback(job_id, source_id) where reviewer_id is null and source_id is not null"
             )
 
     def create(self, normalized_input: dict, validation: dict, trace_id: str, request_id: str):
@@ -104,11 +119,19 @@ class JobRepository:
         return self.get(row[0]) if row else None
 
     def add_feedback(self, job_id: str, payload: dict):
+        reviewer_id = payload.get("reviewer_id")
+        source_id = payload.get("source_id")
+        if not reviewer_id and not source_id:
+            raise ValueError("either reviewer_id or source_id is required")
         with self._lock, self._conn() as c:
             c.execute(
-                "insert into feedback (job_id,rating,achieved_motion,achieved_force,achieved_pressure,notes,created_at) values (?,?,?,?,?,?,?)",
+                "insert into feedback (job_id,reviewer_id,source_id,context_tag,observed_at,rating,achieved_motion,achieved_force,achieved_pressure,notes,created_at) values (?,?,?,?,?,?,?,?,?,?,?)",
                 (
                     job_id,
+                    reviewer_id,
+                    source_id,
+                    payload.get("context_tag"),
+                    payload.get("observed_at"),
                     payload.get("rating"),
                     1 if payload.get("achieved_motion") else 0,
                     1 if payload.get("achieved_force") else 0,
@@ -117,6 +140,16 @@ class JobRepository:
                     utcnow(),
                 ),
             )
+
+    def feedback_window_days(self) -> int:
+        return int(os.getenv("FEEDBACK_WINDOW_DAYS", "30"))
+
+    def is_feedback_window_open(self, job: dict) -> bool:
+        completed_at = job.get("completed_at")
+        if not completed_at:
+            return False
+        completed = datetime.fromisoformat(completed_at)
+        return datetime.now(timezone.utc) <= completed + timedelta(days=self.feedback_window_days())
 
     def feedback_summary(self):
         with self._conn() as c:

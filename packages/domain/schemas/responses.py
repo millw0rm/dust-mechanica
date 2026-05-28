@@ -40,6 +40,10 @@ class JobDetailResponse(BaseModel):
 
 class FeedbackRequest(BaseModel):
     rating: int = Field(ge=1, le=5)
+    reviewer_id: str | None = None
+    source_id: str | None = None
+    context_tag: str | None = None
+    observed_at: str
     achieved_motion: bool = True
     achieved_force: bool = True
     achieved_pressure: bool = True
