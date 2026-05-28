@@ -58,6 +58,7 @@ def run_generation_pipeline(req, *, allowed_topologies=None, excluded_topologies
                     "transmission": r.get("transmission", {}),
                     "achievable_speed": r["achievable_speed"],
                     "torque_margin": r["torque_margin"],
+                    "torque_required_nm": r.get("torque_required_nm"),
                     "efficiency": r["efficiency"],
                     "total_mass": r["total_mass"],
                 },

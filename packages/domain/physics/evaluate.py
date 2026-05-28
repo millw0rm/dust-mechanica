@@ -49,6 +49,9 @@ def evaluate_candidate_physics(candidate: dict, requirements) -> PhysicsResult:
         achievable_speed_mps=achievable_speed,
         torque_margin=torque_margin,
         motor=candidate.get("motor", {}),
+        drive=candidate.get("drive", {}),
+        torque_demand_nm=candidate.get("torque_required_nm"),
+        efficiency=candidate.get("efficiency"),
     )
     thermal_warnings = []
     if thermal_margins["estimated_temp_rise_c"] > policy.thermal_limits.max_temp_rise_c:
@@ -59,12 +62,36 @@ def evaluate_candidate_physics(candidate: dict, requirements) -> PhysicsResult:
                 severity="high",
             )
         )
+    elif thermal_margins["estimated_temp_rise_c"] > policy.thermal_limits.warning_temp_rise_c:
+        thermal_warnings.append(
+            PhysicsWarning(
+                code="risk_thermal_temp_rise_near_limit",
+                message=f"Estimated temp rise exceeds warning threshold {policy.thermal_limits.warning_temp_rise_c} C",
+                severity="medium",
+            )
+        )
     if thermal_margins["thermal_margin"] < policy.thermal_limits.min_thermal_margin:
         thermal_warnings.append(
             PhysicsWarning(
                 code="risk_thermal_margin_low",
                 message=f"Thermal margin below {policy.thermal_limits.min_thermal_margin}",
+                severity="high" if thermal_margins["thermal_margin"] < 0 else "medium",
+            )
+        )
+    elif thermal_margins["thermal_margin"] < policy.thermal_limits.warning_thermal_margin:
+        thermal_warnings.append(
+            PhysicsWarning(
+                code="risk_thermal_margin_near_limit",
+                message=f"Thermal margin below warning threshold {policy.thermal_limits.warning_thermal_margin}",
                 severity="medium",
+            )
+        )
+    if thermal_margins.get("drive_power_margin", 1.0) < policy.thermal_limits.min_drive_power_margin:
+        thermal_warnings.append(
+            PhysicsWarning(
+                code="risk_drive_thermal_power_margin_low",
+                message=f"Drive thermal power margin below {policy.thermal_limits.min_drive_power_margin}",
+                severity="high" if thermal_margins.get("drive_power_margin", 1.0) < 0 else "medium",
             )
         )
     thermal_passed = not any(warning.severity == "high" for warning in thermal_warnings)

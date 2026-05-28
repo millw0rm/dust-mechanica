@@ -31,4 +31,7 @@ structural_limits:
 
 thermal_limits:
   max_temp_rise_c: 55.0
+  warning_temp_rise_c: 45.0
   min_thermal_margin: 0.1
+  warning_thermal_margin: 0.2
+  min_drive_power_margin: 0.05

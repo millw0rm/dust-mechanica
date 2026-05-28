@@ -25,8 +25,9 @@ class BeltAxisTopology:
                     achievable_speed = (m["max_rpm"] / 60.0) * 0.03 / t["ratio"]
                     torque_available = apply_derating(m["torque_nm"] * t["ratio"], duty, self.family)
                     torque_required = max(0.05, payload * 9.81 * 0.01)
+                    motor_torque_required = torque_required / max(t["ratio"], 1e-6)
                     feasible = achievable_speed >= target_speed and torque_available >= torque_required
-                    candidates.append({"id": f"{self.family}-{m['id']}-{d['id']}-{t['id']}", "topology": self.name, "motor": m, "drive": d, "transmission": t, "achievable_speed": achievable_speed, "torque_margin": (torque_available - torque_required) / torque_required, "efficiency": d["efficiency"] * t.get("belt_efficiency", 0.9), "total_mass": m["mass_kg"] + d["mass_kg"] + t["mass_kg"], "total_cost": m["cost"] + d["cost"] + t["cost"], "feasible": feasible})
+                    candidates.append({"id": f"{self.family}-{m['id']}-{d['id']}-{t['id']}", "topology": self.name, "motor": m, "drive": d, "transmission": t, "achievable_speed": achievable_speed, "torque_margin": (torque_available - torque_required) / torque_required, "torque_required_nm": motor_torque_required, "output_torque_required_nm": torque_required, "efficiency": d["efficiency"] * t.get("belt_efficiency", 0.9), "total_mass": m["mass_kg"] + d["mass_kg"] + t["mass_kg"], "total_cost": m["cost"] + d["cost"] + t["cost"], "feasible": feasible})
         return candidates
 
     def risk_heuristics(self, candidate, req):

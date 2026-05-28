@@ -22,7 +22,7 @@ class BallScrewTopology:
                     torque_available = apply_derating(motor["torque_nm"], req.functional_targets.duty_cycle, self.family)
                     torque_required = max(0.05, req.functional_targets.payload_mass.value * 9.81 * (lead / (6.283 * screw["efficiency"])))
                     feasible = speed >= req.functional_targets.max_speed.value and torque_available >= torque_required
-                    out.append({"id": f"{self.family}-{screw['id']}-{motor['id']}-{drive['id']}", "topology": self.name, "motor": motor, "drive": drive, "transmission": screw, "achievable_speed": speed, "torque_margin": (torque_available - torque_required) / torque_required, "efficiency": drive["efficiency"] * screw["efficiency"], "total_mass": motor["mass_kg"] + drive["mass_kg"] + screw["mass_kg"], "total_cost": motor["cost"] + drive["cost"] + screw["cost"], "feasible": feasible})
+                    out.append({"id": f"{self.family}-{screw['id']}-{motor['id']}-{drive['id']}", "topology": self.name, "motor": motor, "drive": drive, "transmission": screw, "achievable_speed": speed, "torque_margin": (torque_available - torque_required) / torque_required, "torque_required_nm": torque_required, "efficiency": drive["efficiency"] * screw["efficiency"], "total_mass": motor["mass_kg"] + drive["mass_kg"] + screw["mass_kg"], "total_cost": motor["cost"] + drive["cost"] + screw["cost"], "feasible": feasible})
         return out
 
     def risk_heuristics(self, candidate, req):

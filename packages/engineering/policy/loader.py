@@ -25,7 +25,10 @@ class StructuralLimits(BaseModel):
 
 class ThermalLimits(BaseModel):
     max_temp_rise_c: float = Field(gt=0)
+    warning_temp_rise_c: float = Field(gt=0)
     min_thermal_margin: float
+    warning_thermal_margin: float
+    min_drive_power_margin: float
 
 
 class Policy(BaseModel):

@@ -1,5 +1,32 @@
 [
-  {"id":"D1","max_power_w":150,"efficiency":0.93,"mass_kg":0.5,"cost":80},
-  {"id":"D2","max_power_w":300,"efficiency":0.95,"mass_kg":0.7,"cost":120},
-  {"id":"D3","max_power_w":800,"efficiency":0.96,"mass_kg":1.1,"cost":210}
+  {
+    "id": "D1",
+    "max_power_w": 150,
+    "efficiency": 0.93,
+    "mass_kg": 0.5,
+    "cost": 80,
+    "thermal_resistance_c_per_w": 1.6,
+    "quiescent_loss_w": 3.0,
+    "allowable_temp_rise_c": 45.0
+  },
+  {
+    "id": "D2",
+    "max_power_w": 300,
+    "efficiency": 0.95,
+    "mass_kg": 0.7,
+    "cost": 120,
+    "thermal_resistance_c_per_w": 1.35,
+    "quiescent_loss_w": 4.0,
+    "allowable_temp_rise_c": 45.0
+  },
+  {
+    "id": "D3",
+    "max_power_w": 800,
+    "efficiency": 0.96,
+    "mass_kg": 1.1,
+    "cost": 210,
+    "thermal_resistance_c_per_w": 1.05,
+    "quiescent_loss_w": 6.0,
+    "allowable_temp_rise_c": 45.0
+  }
 ]
