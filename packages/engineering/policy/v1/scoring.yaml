@@ -27,3 +27,7 @@ weight_perturbation:
 structural_limits:
   max_deflection_mm: 0.5
   min_structural_safety_factor_proxy: 1.5
+
+thermal_limits:
+  max_temp_rise_c: 55.0
+  min_thermal_margin: 0.1
