@@ -58,7 +58,7 @@ def test_toolchain_run_endpoint_executes_cadquery_and_persists_artifacts():
     assert saved["report"]["toolchain_runs"][-1]["candidate_id"] == candidate_id
 
 
-def test_toolchain_run_endpoint_marks_unsupported_tools_planned_only():
+def test_toolchain_run_endpoint_marks_optional_and_unsupported_tools_gracefully():
     job_id, result = _completed_job()
     candidate_id = result["candidates"][0]["id"]
 
@@ -69,6 +69,6 @@ def test_toolchain_run_endpoint_marks_unsupported_tools_planned_only():
 
     assert response.status_code == 200
     body = response.json()
-    assert body["status"] == "planned_only"
-    assert [execution["status"] for execution in body["executions"]] == ["planned_only", "planned_only"]
+    assert body["status"] == "unavailable"
+    assert [execution["status"] for execution in body["executions"]] == ["unavailable", "planned_only"]
     assert body["artifact_uris"] == {}
