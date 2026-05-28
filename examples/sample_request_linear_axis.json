@@ -1,0 +1,19 @@
+{
+  "topology": "belt-driven-linear-axis",
+  "functional_targets": {
+    "travel": {"value": 800, "unit": "mm"},
+    "max_speed": {"value": 1200, "unit": "mm/s"},
+    "payload_mass": {"value": 3.0, "unit": "kg"},
+    "duty_cycle": 0.7
+  },
+  "constraints": {
+    "max_motor_power_w": 400,
+    "max_total_mass_kg": 8
+  },
+  "priorities": {
+    "efficiency": 0.2,
+    "cost": 0.3,
+    "compactness": 0.2,
+    "performance_margin": 0.3
+  }
+}
