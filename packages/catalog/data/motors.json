@@ -6,9 +6,14 @@
     "torque_nm": 0.45,
     "mass_kg": 0.8,
     "cost": 110,
-    "thermal_resistance_c_per_w": 1.8,
+    "thermal_resistance_c_per_w": 0.64,
     "copper_resistance_ohm": 0.6,
-    "catalog_loss_fraction": 0.16
+    "catalog_loss_fraction": 0.16,
+    "continuous_torque_nm": 0.28,
+    "intermittent_torque_nm": 0.45,
+    "allowable_temp_rise_c": 55.0,
+    "thermal_time_constant_s": 520,
+    "copper_loss_share": 0.65
   },
   {
     "id": "M2",
@@ -17,9 +22,14 @@
     "torque_nm": 0.75,
     "mass_kg": 1.1,
     "cost": 160,
-    "thermal_resistance_c_per_w": 1.8,
+    "thermal_resistance_c_per_w": 0.52,
     "copper_resistance_ohm": 0.6,
-    "catalog_loss_fraction": 0.16
+    "catalog_loss_fraction": 0.16,
+    "continuous_torque_nm": 0.48,
+    "intermittent_torque_nm": 0.75,
+    "allowable_temp_rise_c": 60.0,
+    "thermal_time_constant_s": 650,
+    "copper_loss_share": 0.65
   },
   {
     "id": "M3",
@@ -28,9 +38,14 @@
     "torque_nm": 1.4,
     "mass_kg": 1.8,
     "cost": 240,
-    "thermal_resistance_c_per_w": 1.8,
+    "thermal_resistance_c_per_w": 0.42,
     "copper_resistance_ohm": 0.6,
-    "catalog_loss_fraction": 0.16
+    "catalog_loss_fraction": 0.16,
+    "continuous_torque_nm": 0.9,
+    "intermittent_torque_nm": 1.4,
+    "allowable_temp_rise_c": 65.0,
+    "thermal_time_constant_s": 780,
+    "copper_loss_share": 0.65
   },
   {
     "id": "M4",
@@ -39,9 +54,14 @@
     "torque_nm": 2.4,
     "mass_kg": 3.0,
     "cost": 380,
-    "thermal_resistance_c_per_w": 1.8,
+    "thermal_resistance_c_per_w": 0.32,
     "copper_resistance_ohm": 0.6,
-    "catalog_loss_fraction": 0.16
+    "catalog_loss_fraction": 0.16,
+    "continuous_torque_nm": 1.55,
+    "intermittent_torque_nm": 2.4,
+    "allowable_temp_rise_c": 70.0,
+    "thermal_time_constant_s": 900,
+    "copper_loss_share": 0.65
   },
   {
     "id": "M5",
@@ -50,8 +70,13 @@
     "torque_nm": 0.3,
     "mass_kg": 0.7,
     "cost": 90,
-    "thermal_resistance_c_per_w": 1.8,
+    "thermal_resistance_c_per_w": 0.75,
     "copper_resistance_ohm": 0.6,
-    "catalog_loss_fraction": 0.16
+    "catalog_loss_fraction": 0.16,
+    "continuous_torque_nm": 0.18,
+    "intermittent_torque_nm": 0.3,
+    "allowable_temp_rise_c": 50.0,
+    "thermal_time_constant_s": 480,
+    "copper_loss_share": 0.65
   }
 ]

@@ -6,8 +6,17 @@
     "mass_kg": 2.1,
     "cost": 900,
     "efficiency": 0.93,
-    "thermal_resistance_c_per_w": 1.8,
+    "thermal_resistance_c_per_w": 0.95,
     "copper_resistance_ohm": 0.6,
-    "catalog_loss_fraction": 0.16
+    "catalog_loss_fraction": 0.16,
+    "power_w": 180,
+    "continuous_torque_nm": 3.2,
+    "intermittent_torque_nm": 5.0,
+    "allowable_temp_rise_c": 65.0,
+    "thermal_time_constant_s": 1100,
+    "copper_loss_share": 0.72,
+    "integrated_drive_efficiency": 0.96,
+    "drive_max_power_w": 300,
+    "drive_thermal_resistance_c_per_w": 1.1
   }
 ]

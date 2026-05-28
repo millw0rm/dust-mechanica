@@ -17,7 +17,7 @@ class DirectDriveRotaryTopology:
             speed = motor["max_rpm"] / 60.0
             tq = apply_derating(motor["torque_nm"], req.functional_targets.duty_cycle, self.family)
             tq_req = max(0.02, req.functional_targets.payload_mass.value * 0.2)
-            out.append({"id": f"{self.family}-{motor['id']}", "topology": self.name, "motor": motor, "drive": {"id":"integrated-drive"}, "transmission": {"id":"direct"}, "achievable_speed": speed, "torque_margin": (tq-tq_req)/tq_req, "efficiency": motor.get("efficiency", 0.93), "total_mass": motor["mass_kg"], "total_cost": motor["cost"], "feasible": speed >= req.functional_targets.max_speed.value and tq >= tq_req})
+            out.append({"id": f"{self.family}-{motor['id']}", "topology": self.name, "motor": motor, "drive": {"id":"integrated-drive", "efficiency": motor.get("integrated_drive_efficiency", 0.96), "max_power_w": motor.get("drive_max_power_w", motor.get("power_w", 1e9)), "thermal_resistance_c_per_w": motor.get("drive_thermal_resistance_c_per_w", 1.1), "quiescent_loss_w": motor.get("drive_quiescent_loss_w", 4.0)}, "transmission": {"id":"direct"}, "achievable_speed": speed, "torque_margin": (tq-tq_req)/tq_req, "torque_required_nm": tq_req, "efficiency": motor.get("efficiency", 0.93), "total_mass": motor["mass_kg"], "total_cost": motor["cost"], "feasible": speed >= req.functional_targets.max_speed.value and tq >= tq_req})
         return out
 
     def risk_heuristics(self, candidate, req):
