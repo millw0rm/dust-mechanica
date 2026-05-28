@@ -1,0 +1,351 @@
+{
+  "normalized": {
+    "decision_objective": "balanced",
+    "topology": "belt-driven-linear-axis",
+    "functional_targets": {
+      "travel": {
+        "value": 0.8,
+        "unit": "m"
+      },
+      "max_speed": {
+        "value": 0.6,
+        "unit": "m/s"
+      },
+      "payload_mass": {
+        "value": 12.0,
+        "unit": "kg"
+      },
+      "duty_cycle": 0.7,
+      "backlash_tolerance_mm": null,
+      "precision_target_mm": null
+    },
+    "constraints": {
+      "max_motor_power_w": 1200.0,
+      "max_total_mass_kg": 30.0
+    },
+    "priorities": {
+      "efficiency": 0.25,
+      "cost": 0.25,
+      "compactness": 0.2,
+      "performance_margin": 0.3
+    }
+  },
+  "issues": [],
+  "missing": [],
+  "conflicts": [],
+  "candidates": [
+    {
+      "simulation_summary": {
+        "adapter_version": "simulation-v1",
+        "status": "pass",
+        "checks": {
+          "motion_profile_feasible": true,
+          "torque_speed_margin_valid": true,
+          "thermal_load_sanity": true
+        },
+        "metrics": {
+          "duty_cycle": 0.7,
+          "torque_margin": 0.9791666666666664,
+          "achievable_speed": 3.0,
+          "required_speed": 0.6,
+          "thermal_index": 0.5936
+        }
+      },
+      "cad_artifact_ref": {
+        "artifact_id": "cad-85d8f7de-cb38-4f3c-bd63-c584877973bf",
+        "artifact_uri": "artifact://cad/cad-85d8f7de-cb38-4f3c-bd63-c584877973bf",
+        "status": null
+      },
+      "id": "direct_drive-ddm-50",
+      "components": {
+        "motor_id": "ddm-50",
+        "drive_id": "integrated-drive",
+        "transmission_id": "direct"
+      },
+      "performance": {
+        "achievable_speed_mps": 3.0,
+        "torque_margin": 0.9791666666666664,
+        "est_efficiency": 0.93,
+        "est_total_mass_kg": 2.1
+      },
+      "score_breakdown": {
+        "total": 0.4942,
+        "efficiency": {
+          "raw_metric": 0.93,
+          "normalized_metric": 0.93,
+          "applied_weight": 0.25,
+          "weighted_contribution": 0.2325
+        },
+        "cost": {
+          "raw_metric": 900.0,
+          "normalized_metric": 0.1111,
+          "applied_weight": 0.25,
+          "weighted_contribution": 0.0278
+        },
+        "compactness": {
+          "raw_metric": 2.1,
+          "normalized_metric": 0.4762,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.0952
+        },
+        "performance_margin": {
+          "raw_metric": 0.9792,
+          "normalized_metric": 1.0,
+          "applied_weight": 0.3,
+          "weighted_contribution": 0.3
+        },
+        "lead_time_impact": {
+          "raw_metric": 21.0,
+          "normalized_metric": 0.3333,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.0667
+        },
+        "sourcing_risk": {
+          "raw_metric": 0.1,
+          "normalized_metric": 0.9,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.18
+        },
+        "engineering_fit": {
+          "raw_metric": 0.6277,
+          "normalized_metric": 0.6277,
+          "applied_weight": 0.35,
+          "weighted_contribution": 0.2197
+        }
+      },
+      "risk_flags": [],
+      "confidence": {
+        "value": 0.65,
+        "rationale": "penalty=0.25; assumptions=1; low_margin=False; sparse_data=True"
+      },
+      "feasible": true,
+      "robustness": {
+        "level": "stable",
+        "volatility_index": 0.0
+      }
+    },
+    {
+      "simulation_summary": {
+        "adapter_version": "simulation-v1",
+        "status": "pass",
+        "checks": {
+          "motion_profile_feasible": true,
+          "torque_speed_margin_valid": true,
+          "thermal_load_sanity": true
+        },
+        "metrics": {
+          "duty_cycle": 0.7,
+          "torque_margin": 0.27420998980632005,
+          "achievable_speed": 0.75,
+          "required_speed": 0.6,
+          "thermal_index": 1.4761
+        }
+      },
+      "cad_artifact_ref": {
+        "artifact_id": "cad-b334ecb1-cdff-47aa-a62c-3e05a3eae6a8",
+        "artifact_uri": "artifact://cad/cad-b334ecb1-cdff-47aa-a62c-3e05a3eae6a8",
+        "status": null
+      },
+      "id": "belt_axis-M2-D2-T3",
+      "components": {
+        "motor_id": "M2",
+        "drive_id": "D2",
+        "transmission_id": "T3"
+      },
+      "performance": {
+        "achievable_speed_mps": 0.75,
+        "torque_margin": 0.27420998980632005,
+        "est_efficiency": 0.836,
+        "est_total_mass_kg": 3.1
+      },
+      "score_breakdown": {
+        "total": 0.4825,
+        "efficiency": {
+          "raw_metric": 0.836,
+          "normalized_metric": 0.836,
+          "applied_weight": 0.25,
+          "weighted_contribution": 0.209
+        },
+        "cost": {
+          "raw_metric": 425.0,
+          "normalized_metric": 0.2353,
+          "applied_weight": 0.25,
+          "weighted_contribution": 0.0588
+        },
+        "compactness": {
+          "raw_metric": 3.1,
+          "normalized_metric": 0.3226,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.0645
+        },
+        "performance_margin": {
+          "raw_metric": 0.2742,
+          "normalized_metric": 0.7742,
+          "applied_weight": 0.3,
+          "weighted_contribution": 0.2323
+        },
+        "lead_time_impact": {
+          "raw_metric": 21.0,
+          "normalized_metric": 0.3333,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.0667
+        },
+        "sourcing_risk": {
+          "raw_metric": 0.1,
+          "normalized_metric": 0.9,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.18
+        },
+        "engineering_fit": {
+          "raw_metric": 0.5058,
+          "normalized_metric": 0.5058,
+          "applied_weight": 0.35,
+          "weighted_contribution": 0.177
+        }
+      },
+      "risk_flags": [],
+      "confidence": {
+        "value": 0.65,
+        "rationale": "penalty=0.25; assumptions=1; low_margin=False; sparse_data=True"
+      },
+      "feasible": true,
+      "robustness": {
+        "level": "stable",
+        "volatility_index": 0.0
+      }
+    },
+    {
+      "simulation_summary": {
+        "adapter_version": "simulation-v1",
+        "status": "pass",
+        "checks": {
+          "motion_profile_feasible": true,
+          "torque_speed_margin_valid": true,
+          "thermal_load_sanity": true
+        },
+        "metrics": {
+          "duty_cycle": 0.7,
+          "torque_margin": 0.27420998980632005,
+          "achievable_speed": 0.75,
+          "required_speed": 0.6,
+          "thermal_index": 1.4761
+        }
+      },
+      "cad_artifact_ref": {
+        "artifact_id": "cad-3101d216-66ce-4e11-aef0-319d153b049a",
+        "artifact_uri": "artifact://cad/cad-3101d216-66ce-4e11-aef0-319d153b049a",
+        "status": null
+      },
+      "id": "belt_axis-M2-D3-T3",
+      "components": {
+        "motor_id": "M2",
+        "drive_id": "D3",
+        "transmission_id": "T3"
+      },
+      "performance": {
+        "achievable_speed_mps": 0.75,
+        "torque_margin": 0.27420998980632005,
+        "est_efficiency": 0.8448,
+        "est_total_mass_kg": 3.5
+      },
+      "score_breakdown": {
+        "total": 0.4704,
+        "efficiency": {
+          "raw_metric": 0.8448,
+          "normalized_metric": 0.8448,
+          "applied_weight": 0.25,
+          "weighted_contribution": 0.2112
+        },
+        "cost": {
+          "raw_metric": 515.0,
+          "normalized_metric": 0.1942,
+          "applied_weight": 0.25,
+          "weighted_contribution": 0.0485
+        },
+        "compactness": {
+          "raw_metric": 3.5,
+          "normalized_metric": 0.2857,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.0571
+        },
+        "performance_margin": {
+          "raw_metric": 0.2742,
+          "normalized_metric": 0.7742,
+          "applied_weight": 0.3,
+          "weighted_contribution": 0.2323
+        },
+        "lead_time_impact": {
+          "raw_metric": 21.0,
+          "normalized_metric": 0.3333,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.0667
+        },
+        "sourcing_risk": {
+          "raw_metric": 0.1,
+          "normalized_metric": 0.9,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.18
+        },
+        "engineering_fit": {
+          "raw_metric": 0.5006,
+          "normalized_metric": 0.5006,
+          "applied_weight": 0.35,
+          "weighted_contribution": 0.1752
+        }
+      },
+      "risk_flags": [],
+      "confidence": {
+        "value": 0.65,
+        "rationale": "penalty=0.25; assumptions=1; low_margin=False; sparse_data=True"
+      },
+      "feasible": true,
+      "robustness": {
+        "level": "stable",
+        "volatility_index": 0.0
+      }
+    }
+  ],
+  "assumptions": {
+    "belt-driven-linear-axis": {
+      "selected_topology_rationale": "belt topology selected for linear-axis simplicity and catalog availability",
+      "derating_assumptions": "duty-cycle derating applied to torque availability",
+      "fallback_defaults_used": [
+        "max_speed converted to m/s"
+      ]
+    },
+    "ball-screw-linear-axis": {
+      "selected_topology_rationale": "ball-screw selected for precision/backlash-sensitive linear motion",
+      "derating_assumptions": "continuous duty applies stronger thermal derating",
+      "fallback_defaults_used": [
+        "assumed preloaded nut class C7"
+      ]
+    },
+    "direct-drive-rotary-axis": {
+      "selected_topology_rationale": "direct-drive selected for low backlash rotary motion",
+      "derating_assumptions": "motor-only thermal path applied",
+      "fallback_defaults_used": [
+        "assumed rigid coupling to payload inertia"
+      ]
+    }
+  },
+  "policy_version": "v1",
+  "topology_selection_trace": {},
+  "topology_candidate_stats": {
+    "belt-driven-linear-axis": {
+      "generated": 22,
+      "feasible": 2,
+      "rejected": 20
+    },
+    "ball-screw-linear-axis": {
+      "generated": 30,
+      "feasible": 0,
+      "rejected": 30
+    },
+    "direct-drive-rotary-axis": {
+      "generated": 1,
+      "feasible": 1,
+      "rejected": 0
+    }
+  },
+  "warnings": []
+}
