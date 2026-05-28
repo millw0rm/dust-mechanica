@@ -36,3 +36,11 @@ class JobDetailResponse(BaseModel):
     result: CandidateGenerationResponse | None = None
     review: dict | None = None
     report: dict | None = None
+
+
+class FeedbackRequest(BaseModel):
+    rating: int = Field(ge=1, le=5)
+    achieved_motion: bool = True
+    achieved_force: bool = True
+    achieved_pressure: bool = True
+    notes: str = ""
