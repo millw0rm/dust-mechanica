@@ -26,6 +26,7 @@ weight_perturbation:
   samples: 25
 structural_limits:
   max_deflection_mm: 0.5
+  min_structural_margin: 0.1
   min_structural_safety_factor_proxy: 1.5
 
 thermal_limits:

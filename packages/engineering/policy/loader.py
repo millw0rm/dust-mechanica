@@ -19,6 +19,7 @@ class WeightPerturbation(BaseModel):
 
 class StructuralLimits(BaseModel):
     max_deflection_mm: float = Field(gt=0)
+    min_structural_margin: float = Field(ge=0)
     min_structural_safety_factor_proxy: float = Field(gt=0)
 
 

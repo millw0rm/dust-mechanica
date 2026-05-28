@@ -79,10 +79,11 @@ def evaluate_candidate_physics(candidate: dict, requirements) -> PhysicsResult:
     transmission = candidate.get("transmission", {})
     structural_margins = estimate_beam_structural_response(
         support_condition=transmission.get("support_condition", "simply_supported"),
-        span_m=float(transmission.get("travel_span_m", 0.8)),
+        span_m=float(transmission.get("travel_span_m", requirements.functional_targets.travel.value)),
         payload_kg=float(requirements.functional_targets.payload_mass.value),
         moving_mass_kg=float(transmission.get("moving_mass_estimate_kg", total_mass)),
         acceleration_load_multiplier=float(transmission.get("acceleration_load_multiplier", 1.2)),
+        acceleration_mps2=float(transmission.get("acceleration_mps2", 0.0)),
         youngs_modulus_pa=float(transmission.get("youngs_modulus_pa", 69_000_000_000.0)),
         second_moment_area_m4=float(transmission.get("second_moment_area_m4", 8.0e-8)),
         section_modulus_m3=float(transmission.get("section_modulus_m3", 1.4e-6)),
@@ -99,10 +100,18 @@ def evaluate_candidate_physics(candidate: dict, requirements) -> PhysicsResult:
                 severity="high",
             )
         )
+    if structural_margins["structural_margin"] < policy.structural_limits.min_structural_margin:
+        structural_warnings.append(
+            PhysicsWarning(
+                code="risk_structural_margin_low",
+                message=f"Structural margin below {policy.structural_limits.min_structural_margin}",
+                severity="high" if structural_margins["structural_margin"] < 0 else "medium",
+            )
+        )
     if structural_margins["structural_safety_factor_proxy"] < policy.structural_limits.min_structural_safety_factor_proxy:
         structural_warnings.append(
             PhysicsWarning(
-                code="PHYS_STRUCTURAL_SAFETY_LOW",
+                code="risk_structural_safety_low",
                 message=f"Structural safety factor proxy below {policy.structural_limits.min_structural_safety_factor_proxy}",
                 severity="high",
             )
