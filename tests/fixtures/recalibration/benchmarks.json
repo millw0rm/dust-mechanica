@@ -1,0 +1,6 @@
+[
+  {"expected_feasible": true, "observed_feasible": true},
+  {"expected_feasible": true, "observed_feasible": false},
+  {"expected_feasible": false, "observed_feasible": false},
+  {"expected_feasible": true, "observed_feasible": true}
+]
