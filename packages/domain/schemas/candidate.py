@@ -42,10 +42,13 @@ class Robustness(BaseModel):
 class Candidate(BaseModel):
     simulation_summary: dict | None = None
     cad_artifact_ref: dict | None = None
-    physics_summary: str | None = None
+    physics_summary: dict | None = None
+    physics_status: str | None = None
     physics_passed: bool | None = None
+    physics_checks: list[dict] = Field(default_factory=list)
     physics_margins: dict | None = None
     physics_warnings: list[dict] = Field(default_factory=list)
+    physics_risk_flags: list[dict] = Field(default_factory=list)
     id: str
     components: Components
     performance: Performance
