@@ -51,6 +51,11 @@ def run_generation_pipeline(req, *, allowed_topologies=None, excluded_topologies
             r["sourcing_risk"] = comp_rules["penalty"]
             physics = evaluate_candidate_physics(
                 {
+                    "id": r["id"],
+                    "topology": r.get("topology"),
+                    "motor": r.get("motor", {}),
+                    "drive": r.get("drive", {}),
+                    "transmission": r.get("transmission", {}),
                     "achievable_speed": r["achievable_speed"],
                     "torque_margin": r["torque_margin"],
                     "efficiency": r["efficiency"],
@@ -58,6 +63,9 @@ def run_generation_pipeline(req, *, allowed_topologies=None, excluded_topologies
                 },
                 normalized,
             )
+            for w in physics.warnings:
+                if str(w.code).startswith("risk_"):
+                    risks.append(RiskFlag(code=w.code, message=w.message, severity=w.severity))
             score = score_candidate(r, normalized.priorities, getattr(req, "decision_objective", "balanced"))
             confidence = compute_confidence(1, r["torque_margin"] < 0.2, not r["motor"].get("vendor"))
             sim_sum = sim.run({"duty_cycle": normalized.functional_targets.duty_cycle, "torque_margin": r["torque_margin"], "achievable_speed": r["achievable_speed"], "required_speed": normalized.functional_targets.max_speed.value}) if sim else {"status": "skipped", "warning": "disabled"}

@@ -20,6 +20,7 @@ class WeightPerturbation(BaseModel):
 class Policy(BaseModel):
     version: str
     risk_thresholds: RiskThresholds
+    topology_thresholds: dict[str, dict[str, float]] = Field(default_factory=dict)
     weight_perturbation: WeightPerturbation
 
 

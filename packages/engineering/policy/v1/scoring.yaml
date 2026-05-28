@@ -4,6 +4,23 @@ risk_thresholds:
   low_margin_medium: 0.2
   speed_headroom_factor: 1.05
   min_efficiency: 0.85
+topology_thresholds:
+  belt_axis:
+    max_stretch_ratio: 0.002
+    min_stretch_margin: 0.1
+    max_reflected_inertia_ratio: 8.0
+    min_inertia_margin: 0.05
+  ball_screw:
+    critical_speed_coeff: 4500.0
+    min_critical_speed_margin: 0.1
+    buckling_coeff: 150000000.0
+    min_buckling_margin: 0.2
+    min_efficiency: 0.75
+    min_efficiency_margin: 0.0
+  direct_drive:
+    min_speed_margin: 0.05
+    min_torque_margin: 0.15
+    min_duty_weighted_margin: 0.0
 weight_perturbation:
   bound: 0.08
   samples: 25
