@@ -24,7 +24,12 @@ def process_one_job(repo: JobRepository):
         req = RequirementInput(**job["normalized_input"])
         repo.update(job_id, progress=0.5)
         settings = get_settings()
-        result = run_generation_pipeline(req, sim_enabled=settings.sim_adapter_enabled, cad_enabled=settings.cad_adapter_enabled)
+        result = run_generation_pipeline(
+            req,
+            sim_enabled=settings.sim_adapter_enabled,
+            cad_enabled=settings.cad_adapter_enabled,
+            toolchain_enabled=settings.toolchain_adapter_enabled,
+        )
         if repo.get(job_id).get("cancelled"):
             repo.update(job_id, status=JobStatus.failed.value, progress=1.0, error="cancelled")
             return True
