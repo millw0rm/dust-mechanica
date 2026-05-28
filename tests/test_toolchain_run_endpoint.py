@@ -72,3 +72,25 @@ def test_toolchain_run_endpoint_marks_optional_and_unsupported_tools_gracefully(
     assert body["status"] == "unavailable"
     assert [execution["status"] for execution in body["executions"]] == ["unavailable", "planned_only"]
     assert body["artifact_uris"] == {}
+
+
+def test_toolchain_run_endpoint_accepts_tool_names_and_dry_run_does_not_persist():
+    job_id, result = _completed_job()
+    candidate_id = result["candidates"][0]["id"]
+
+    response = client.post(
+        f"/v1/jobs/{job_id}/toolchain/run",
+        json={"candidate_id": candidate_id, "tool_names": ["CadQuery"], "dry_run": True},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["dry_run"] is True
+    assert body["status"] == "planned_only"
+    assert body["executions"][0]["status"] == "planned_only"
+    assert body["artifact_uris"] == {}
+
+    saved = client.get(f"/v1/jobs/{job_id}").json()
+    saved_candidate = next(item for item in saved["result"]["candidates"] if item["id"] == candidate_id)
+    assert "latest_execution" not in saved_candidate["toolchain_results"]
+    assert saved["report"].get("toolchain_runs") is None
