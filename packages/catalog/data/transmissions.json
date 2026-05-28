@@ -1,0 +1,5 @@
+[
+  {"id":"T1","ratio":1.0,"max_torque_nm":0.6,"belt_efficiency":0.92,"mass_kg":0.6,"cost":70},
+  {"id":"T2","ratio":1.5,"max_torque_nm":1.2,"belt_efficiency":0.9,"mass_kg":0.9,"cost":100},
+  {"id":"T3","ratio":2.0,"max_torque_nm":2.5,"belt_efficiency":0.88,"mass_kg":1.3,"cost":145}
+]

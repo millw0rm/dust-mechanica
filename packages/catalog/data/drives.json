@@ -1,0 +1,5 @@
+[
+  {"id":"D1","max_power_w":150,"efficiency":0.93,"mass_kg":0.5,"cost":80},
+  {"id":"D2","max_power_w":300,"efficiency":0.95,"mass_kg":0.7,"cost":120},
+  {"id":"D3","max_power_w":800,"efficiency":0.96,"mass_kg":1.1,"cost":210}
+]
