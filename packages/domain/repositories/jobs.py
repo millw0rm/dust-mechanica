@@ -151,6 +151,106 @@ class JobRepository:
         completed = datetime.fromisoformat(completed_at)
         return datetime.now(timezone.utc) <= completed + timedelta(days=self.feedback_window_days())
 
+
+
+    def feedback_with_job_metadata(self):
+        with self._conn() as c:
+            rows = c.execute(
+                """select
+                f.observed_at, f.created_at, f.rating, f.achieved_motion, f.achieved_force, f.achieved_pressure,
+                j.result, j.artifact_version
+                from feedback f
+                join jobs j on j.id = f.job_id
+                """
+            ).fetchall()
+        items = []
+        for observed_at, created_at, rating, achieved_motion, achieved_force, achieved_pressure, result_raw, artifact_version in rows:
+            result = json.loads(result_raw) if result_raw else {}
+            candidates = result.get("candidates", [])
+            first = candidates[0] if candidates else {}
+            items.append({
+                "observed_at": observed_at or created_at,
+                "rating": rating,
+                "achieved_motion": float(achieved_motion or 0),
+                "achieved_force": float(achieved_force or 0),
+                "achieved_pressure": float(achieved_pressure or 0),
+                "topology": first.get("topology") or "unknown",
+                "policy_version": result.get("policy_version") or "unknown",
+                "artifact_version": artifact_version or "unknown",
+            })
+        return items
+
+    def telemetry_slices(self, bucket: str = "daily"):
+        if bucket not in {"daily", "weekly"}:
+            raise ValueError("bucket must be daily or weekly")
+        grouped = {}
+        for item in self.feedback_with_job_metadata():
+            observed = datetime.fromisoformat(item["observed_at"])
+            if bucket == "daily":
+                period_start = observed.date().isoformat()
+            else:
+                week_start = (observed - timedelta(days=observed.weekday())).date()
+                period_start = week_start.isoformat()
+            key = (period_start, item["topology"], item["policy_version"], item["artifact_version"])
+            agg = grouped.setdefault(key, {"count": 0, "rating": 0.0, "motion": 0.0, "force": 0.0, "pressure": 0.0})
+            agg["count"] += 1
+            agg["rating"] += float(item["rating"] or 0)
+            agg["motion"] += item["achieved_motion"]
+            agg["force"] += item["achieved_force"]
+            agg["pressure"] += item["achieved_pressure"]
+
+        slices = []
+        for (period_start, topology, policy_version, artifact_version), agg in sorted(grouped.items()):
+            count = agg["count"]
+            slices.append({
+                "period_start": period_start,
+                "topology": topology,
+                "policy_version": policy_version,
+                "artifact_version": artifact_version,
+                "total_feedback": count,
+                "avg_rating": agg["rating"] / count if count else 0.0,
+                "motion_success_rate": agg["motion"] / count if count else 0.0,
+                "force_success_rate": agg["force"] / count if count else 0.0,
+                "pressure_success_rate": agg["pressure"] / count if count else 0.0,
+            })
+        return slices
+
+    def telemetry_drift(self, recent_days: int = 7, baseline_days: int = 28):
+        now = datetime.now(timezone.utc)
+        recent_start = now - timedelta(days=recent_days)
+        baseline_start = recent_start - timedelta(days=baseline_days)
+
+        baseline = []
+        recent = []
+        for item in self.feedback_with_job_metadata():
+            observed = datetime.fromisoformat(item["observed_at"])
+            if observed.tzinfo is None:
+                observed = observed.replace(tzinfo=timezone.utc)
+            if recent_start <= observed <= now:
+                recent.append(item)
+            elif baseline_start <= observed < recent_start:
+                baseline.append(item)
+
+        def avg(rows, key):
+            return sum(float(r.get(key) or 0.0) for r in rows) / len(rows) if rows else 0.0
+
+        metrics = []
+        for label, key in [("rating", "rating"), ("motion_success_rate", "achieved_motion"), ("force_success_rate", "achieved_force"), ("pressure_success_rate", "achieved_pressure")]:
+            b = avg(baseline, key)
+            r = avg(recent, key)
+            metrics.append({"metric": label, "baseline": b, "recent": r, "delta": r - b})
+
+        return {
+            "baseline_days": baseline_days,
+            "recent_days": recent_days,
+            "baseline_start": baseline_start.isoformat(),
+            "baseline_end": recent_start.isoformat(),
+            "recent_start": recent_start.isoformat(),
+            "recent_end": now.isoformat(),
+            "sample_sizes": {"baseline": len(baseline), "recent": len(recent)},
+            "metrics": metrics,
+        }
+
     def feedback_summary(self):
         with self._conn() as c:
             row = c.execute(

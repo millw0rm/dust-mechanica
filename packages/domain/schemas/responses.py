@@ -48,3 +48,40 @@ class FeedbackRequest(BaseModel):
     achieved_force: bool = True
     achieved_pressure: bool = True
     notes: str = ""
+
+
+class TelemetrySliceMetrics(BaseModel):
+    period_start: str
+    topology: str
+    policy_version: str
+    artifact_version: str
+    total_feedback: int
+    avg_rating: float
+    motion_success_rate: float
+    force_success_rate: float
+    pressure_success_rate: float
+
+
+class TelemetrySlicesResponse(BaseModel):
+    schema_version: str = "2.1"
+    bucket: str
+    slices: list[TelemetrySliceMetrics] = Field(default_factory=list)
+
+
+class TelemetryDriftMetric(BaseModel):
+    metric: str
+    baseline: float
+    recent: float
+    delta: float
+
+
+class TelemetryDriftResponse(BaseModel):
+    schema_version: str = "2.1"
+    baseline_days: int
+    recent_days: int
+    baseline_start: str
+    baseline_end: str
+    recent_start: str
+    recent_end: str
+    sample_sizes: dict
+    metrics: list[TelemetryDriftMetric] = Field(default_factory=list)
