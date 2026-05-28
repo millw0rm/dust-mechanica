@@ -1,0 +1,8 @@
+{
+  "exported_at_utc": "2026-05-28T11:54:11.567071+00:00",
+  "topology": "belt-driven-linear-axis",
+  "candidate_count": 3,
+  "risk_flags": [],
+  "top_candidate_id": "direct_drive-ddm-50",
+  "top_candidate_total_score": 0.4942
+}
