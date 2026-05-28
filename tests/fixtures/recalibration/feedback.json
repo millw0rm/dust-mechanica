@@ -1,0 +1,6 @@
+[
+  {"lead_time_error_days": 4, "risk_miss": 0.1, "observed_margin": 0.18, "observed_efficiency": 0.88},
+  {"lead_time_error_days": 6, "risk_miss": 0.2, "observed_margin": 0.22, "observed_efficiency": 0.9},
+  {"lead_time_error_days": 2, "risk_miss": 0.1, "observed_margin": 0.2, "observed_efficiency": 0.87},
+  {"lead_time_error_days": 5, "risk_miss": 0.15, "observed_margin": 0.19, "observed_efficiency": 0.89}
+]
