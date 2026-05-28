@@ -1,0 +1,1219 @@
+{
+  "normalized": {
+    "decision_objective": "balanced",
+    "topology": "belt-driven-linear-axis",
+    "functional_targets": {
+      "travel": {
+        "value": 0.8,
+        "unit": "m"
+      },
+      "max_speed": {
+        "value": 0.6,
+        "unit": "m/s"
+      },
+      "payload_mass": {
+        "value": 12.0,
+        "unit": "kg"
+      },
+      "duty_cycle": 0.7,
+      "backlash_tolerance_mm": null,
+      "precision_target_mm": null
+    },
+    "constraints": {
+      "max_motor_power_w": 1200.0,
+      "max_total_mass_kg": 30.0
+    },
+    "priorities": {
+      "efficiency": 0.25,
+      "cost": 0.25,
+      "compactness": 0.2,
+      "performance_margin": 0.3
+    }
+  },
+  "issues": [],
+  "missing": [],
+  "conflicts": [],
+  "candidates": [
+    {
+      "simulation_summary": {
+        "adapter_version": "simulation-v1",
+        "status": "pass",
+        "checks": {
+          "motion_profile_feasible": true,
+          "torque_speed_margin_valid": true,
+          "thermal_load_sanity": true
+        },
+        "metrics": {
+          "duty_cycle": 0.7,
+          "torque_margin": 0.9791666666666664,
+          "achievable_speed": 3.0,
+          "required_speed": 0.6,
+          "thermal_index": 0.5936
+        }
+      },
+      "cad_artifact_ref": {
+        "artifact_id": null,
+        "artifact_uri": null,
+        "status": "skipped"
+      },
+      "physics_summary": {
+        "status": "pass",
+        "checks": [
+          {
+            "name": "drivetrain",
+            "status": "pass",
+            "passed": true,
+            "margins": {
+              "speed_headroom_ratio": 4.0,
+              "torque_margin": 0.9792,
+              "efficiency_margin": 0.18,
+              "mass_budget_margin_kg": 9.9,
+              "direct_drive_speed_margin": 4.0,
+              "direct_drive_torque_margin": 0.9792,
+              "direct_drive_duty_weighted_margin": 2.0475
+            },
+            "warnings": []
+          },
+          {
+            "name": "thermal",
+            "status": "pass",
+            "passed": true,
+            "margins": {
+              "duty_weighted_load": 0.6275,
+              "torque_demand_nm": 2.4,
+              "rms_torque_nm": 2.008,
+              "continuous_torque_nm": 3.2,
+              "intermittent_torque_nm": 5.0,
+              "mechanical_output_w": 9.0478,
+              "motor_loss_w": 9.2938,
+              "drive_loss_w": 3.0838,
+              "estimated_losses_w": 12.3775,
+              "motor_temp_rise_c": 8.8291,
+              "drive_temp_rise_c": 3.3921,
+              "estimated_temp_rise_c": 8.8291,
+              "allowable_temp_rise_c": 65.0,
+              "continuous_thermal_margin": 0.3725,
+              "intermittent_thermal_margin": 0.52,
+              "temperature_rise_margin": 0.8642,
+              "drive_power_margin": 0.9676,
+              "thermal_margin": 0.3725,
+              "thermal_mode": "continuous"
+            },
+            "warnings": []
+          },
+          {
+            "name": "structural",
+            "status": "pass",
+            "passed": true,
+            "margins": {
+              "effective_structural_load_n": 165.9852,
+              "estimated_max_deflection_mm": 0.3207,
+              "estimated_stress_proxy_mpa": 23.7122,
+              "structural_deflection_margin": 0.3585,
+              "structural_stress_margin": 0.8024,
+              "structural_margin": 0.3585,
+              "structural_safety_factor_proxy": 5.0607
+            },
+            "warnings": []
+          },
+          {
+            "name": "controls",
+            "status": "pass",
+            "passed": true,
+            "margins": {
+              "controls_motion_profile_margin": 0.8,
+              "controls_torque_speed_margin": 0.8,
+              "controls_duty_margin": 0.3
+            },
+            "warnings": []
+          }
+        ],
+        "margins": {
+          "speed_headroom_ratio": 4.0,
+          "torque_margin": 0.9792,
+          "efficiency_margin": 0.18,
+          "mass_budget_margin_kg": 9.9,
+          "direct_drive_speed_margin": 4.0,
+          "direct_drive_torque_margin": 0.9792,
+          "direct_drive_duty_weighted_margin": 2.0475,
+          "duty_weighted_load": 0.6275,
+          "torque_demand_nm": 2.4,
+          "rms_torque_nm": 2.008,
+          "continuous_torque_nm": 3.2,
+          "intermittent_torque_nm": 5.0,
+          "mechanical_output_w": 9.0478,
+          "motor_loss_w": 9.2938,
+          "drive_loss_w": 3.0838,
+          "estimated_losses_w": 12.3775,
+          "motor_temp_rise_c": 8.8291,
+          "drive_temp_rise_c": 3.3921,
+          "estimated_temp_rise_c": 8.8291,
+          "allowable_temp_rise_c": 65.0,
+          "continuous_thermal_margin": 0.3725,
+          "intermittent_thermal_margin": 0.52,
+          "temperature_rise_margin": 0.8642,
+          "drive_power_margin": 0.9676,
+          "thermal_margin": 0.3725,
+          "thermal_mode": "continuous",
+          "effective_structural_load_n": 165.9852,
+          "estimated_max_deflection_mm": 0.3207,
+          "estimated_stress_proxy_mpa": 23.7122,
+          "structural_deflection_margin": 0.3585,
+          "structural_stress_margin": 0.8024,
+          "structural_margin": 0.3585,
+          "structural_safety_factor_proxy": 5.0607,
+          "controls_motion_profile_margin": 0.8,
+          "controls_torque_speed_margin": 0.8,
+          "controls_duty_margin": 0.3
+        },
+        "warnings": [],
+        "risk_flags": []
+      },
+      "physics_status": "pass",
+      "physics_passed": true,
+      "physics_checks": [
+        {
+          "name": "drivetrain",
+          "status": "pass",
+          "passed": true,
+          "margins": {
+            "speed_headroom_ratio": 4.0,
+            "torque_margin": 0.9792,
+            "efficiency_margin": 0.18,
+            "mass_budget_margin_kg": 9.9,
+            "direct_drive_speed_margin": 4.0,
+            "direct_drive_torque_margin": 0.9792,
+            "direct_drive_duty_weighted_margin": 2.0475
+          },
+          "warnings": []
+        },
+        {
+          "name": "thermal",
+          "status": "pass",
+          "passed": true,
+          "margins": {
+            "duty_weighted_load": 0.6275,
+            "torque_demand_nm": 2.4,
+            "rms_torque_nm": 2.008,
+            "continuous_torque_nm": 3.2,
+            "intermittent_torque_nm": 5.0,
+            "mechanical_output_w": 9.0478,
+            "motor_loss_w": 9.2938,
+            "drive_loss_w": 3.0838,
+            "estimated_losses_w": 12.3775,
+            "motor_temp_rise_c": 8.8291,
+            "drive_temp_rise_c": 3.3921,
+            "estimated_temp_rise_c": 8.8291,
+            "allowable_temp_rise_c": 65.0,
+            "continuous_thermal_margin": 0.3725,
+            "intermittent_thermal_margin": 0.52,
+            "temperature_rise_margin": 0.8642,
+            "drive_power_margin": 0.9676,
+            "thermal_margin": 0.3725,
+            "thermal_mode": "continuous"
+          },
+          "warnings": []
+        },
+        {
+          "name": "structural",
+          "status": "pass",
+          "passed": true,
+          "margins": {
+            "effective_structural_load_n": 165.9852,
+            "estimated_max_deflection_mm": 0.3207,
+            "estimated_stress_proxy_mpa": 23.7122,
+            "structural_deflection_margin": 0.3585,
+            "structural_stress_margin": 0.8024,
+            "structural_margin": 0.3585,
+            "structural_safety_factor_proxy": 5.0607
+          },
+          "warnings": []
+        },
+        {
+          "name": "controls",
+          "status": "pass",
+          "passed": true,
+          "margins": {
+            "controls_motion_profile_margin": 0.8,
+            "controls_torque_speed_margin": 0.8,
+            "controls_duty_margin": 0.3
+          },
+          "warnings": []
+        }
+      ],
+      "physics_margins": {
+        "speed_headroom_ratio": 4.0,
+        "torque_margin": 0.9792,
+        "efficiency_margin": 0.18,
+        "mass_budget_margin_kg": 9.9,
+        "direct_drive_speed_margin": 4.0,
+        "direct_drive_torque_margin": 0.9792,
+        "direct_drive_duty_weighted_margin": 2.0475,
+        "duty_weighted_load": 0.6275,
+        "torque_demand_nm": 2.4,
+        "rms_torque_nm": 2.008,
+        "continuous_torque_nm": 3.2,
+        "intermittent_torque_nm": 5.0,
+        "mechanical_output_w": 9.0478,
+        "motor_loss_w": 9.2938,
+        "drive_loss_w": 3.0838,
+        "estimated_losses_w": 12.3775,
+        "motor_temp_rise_c": 8.8291,
+        "drive_temp_rise_c": 3.3921,
+        "estimated_temp_rise_c": 8.8291,
+        "allowable_temp_rise_c": 65.0,
+        "continuous_thermal_margin": 0.3725,
+        "intermittent_thermal_margin": 0.52,
+        "temperature_rise_margin": 0.8642,
+        "drive_power_margin": 0.9676,
+        "thermal_margin": 0.3725,
+        "thermal_mode": "continuous",
+        "effective_structural_load_n": 165.9852,
+        "estimated_max_deflection_mm": 0.3207,
+        "estimated_stress_proxy_mpa": 23.7122,
+        "structural_deflection_margin": 0.3585,
+        "structural_stress_margin": 0.8024,
+        "structural_margin": 0.3585,
+        "structural_safety_factor_proxy": 5.0607,
+        "controls_motion_profile_margin": 0.8,
+        "controls_torque_speed_margin": 0.8,
+        "controls_duty_margin": 0.3
+      },
+      "physics_warnings": [],
+      "physics_risk_flags": [],
+      "id": "direct_drive-ddm-50",
+      "components": {
+        "motor_id": "ddm-50",
+        "drive_id": "integrated-drive",
+        "transmission_id": "direct"
+      },
+      "performance": {
+        "achievable_speed_mps": 3.0,
+        "torque_margin": 0.9791666666666664,
+        "est_efficiency": 0.93,
+        "est_total_mass_kg": 2.1
+      },
+      "score_breakdown": {
+        "total": 0.4942,
+        "efficiency": {
+          "raw_metric": 0.93,
+          "normalized_metric": 0.93,
+          "applied_weight": 0.25,
+          "weighted_contribution": 0.2325
+        },
+        "cost": {
+          "raw_metric": 900.0,
+          "normalized_metric": 0.1111,
+          "applied_weight": 0.25,
+          "weighted_contribution": 0.0278
+        },
+        "compactness": {
+          "raw_metric": 2.1,
+          "normalized_metric": 0.4762,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.0952
+        },
+        "performance_margin": {
+          "raw_metric": 0.9792,
+          "normalized_metric": 1.0,
+          "applied_weight": 0.3,
+          "weighted_contribution": 0.3
+        },
+        "lead_time_impact": {
+          "raw_metric": 21.0,
+          "normalized_metric": 0.3333,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.0667
+        },
+        "sourcing_risk": {
+          "raw_metric": 0.1,
+          "normalized_metric": 0.9,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.18
+        },
+        "engineering_fit": {
+          "raw_metric": 0.6277,
+          "normalized_metric": 0.6277,
+          "applied_weight": 0.35,
+          "weighted_contribution": 0.2197
+        },
+        "physics_structural_margin": {
+          "raw_metric": 0.3585,
+          "normalized_metric": 1.0,
+          "applied_weight": 0.15,
+          "weighted_contribution": 0.15
+        }
+      },
+      "risk_flags": [],
+      "confidence": {
+        "value": 0.65,
+        "rationale": "penalty=0.25; assumptions=1; low_margin=False; sparse_data=True"
+      },
+      "feasible": true,
+      "robustness": {
+        "level": "stable",
+        "volatility_index": 0.0
+      }
+    },
+    {
+      "simulation_summary": {
+        "adapter_version": "simulation-v1",
+        "status": "pass",
+        "checks": {
+          "motion_profile_feasible": true,
+          "torque_speed_margin_valid": true,
+          "thermal_load_sanity": true
+        },
+        "metrics": {
+          "duty_cycle": 0.7,
+          "torque_margin": 0.27420998980632005,
+          "achievable_speed": 0.75,
+          "required_speed": 0.6,
+          "thermal_index": 1.4761
+        }
+      },
+      "cad_artifact_ref": {
+        "artifact_id": null,
+        "artifact_uri": null,
+        "status": "skipped"
+      },
+      "physics_summary": {
+        "status": "fail",
+        "checks": [
+          {
+            "name": "drivetrain",
+            "status": "fail",
+            "passed": false,
+            "margins": {
+              "speed_headroom_ratio": 0.25,
+              "torque_margin": 0.2742,
+              "efficiency_margin": 0.086,
+              "mass_budget_margin_kg": 8.9,
+              "belt_stretch_margin": -1.943,
+              "belt_reflected_inertia_margin": 0.325,
+              "belt_required_speed_mps": 0.6,
+              "belt_duty_cycle": 0.7
+            },
+            "warnings": [
+              {
+                "code": "risk_belt_stretch_margin_low",
+                "message": "Belt stretch margin below threshold",
+                "severity": "high"
+              }
+            ]
+          },
+          {
+            "name": "thermal",
+            "status": "fail",
+            "passed": false,
+            "margins": {
+              "duty_weighted_load": 1.026,
+              "torque_demand_nm": 0.5886,
+              "rms_torque_nm": 0.4925,
+              "continuous_torque_nm": 0.48,
+              "intermittent_torque_nm": 0.75,
+              "mechanical_output_w": 147.9313,
+              "motor_loss_w": 30.9823,
+              "drive_loss_w": 9.3193,
+              "estimated_losses_w": 40.3015,
+              "motor_temp_rise_c": 16.1108,
+              "drive_temp_rise_c": 12.581,
+              "estimated_temp_rise_c": 16.1108,
+              "allowable_temp_rise_c": 60.0,
+              "continuous_thermal_margin": -0.026,
+              "intermittent_thermal_margin": 0.2152,
+              "temperature_rise_margin": 0.7315,
+              "drive_power_margin": 0.4102,
+              "thermal_margin": -0.026,
+              "thermal_mode": "continuous"
+            },
+            "warnings": [
+              {
+                "code": "risk_thermal_margin_low",
+                "message": "Thermal margin below 0.1",
+                "severity": "high"
+              }
+            ]
+          },
+          {
+            "name": "structural",
+            "status": "pass",
+            "passed": true,
+            "margins": {
+              "effective_structural_load_n": 177.7572,
+              "estimated_max_deflection_mm": 0.3435,
+              "estimated_stress_proxy_mpa": 25.3939,
+              "structural_deflection_margin": 0.313,
+              "structural_stress_margin": 0.7884,
+              "structural_margin": 0.313,
+              "structural_safety_factor_proxy": 4.7255
+            },
+            "warnings": []
+          },
+          {
+            "name": "controls",
+            "status": "pass",
+            "passed": true,
+            "margins": {
+              "controls_motion_profile_margin": 0.2,
+              "controls_torque_speed_margin": 0.2,
+              "controls_duty_margin": 0.3
+            },
+            "warnings": []
+          }
+        ],
+        "margins": {
+          "speed_headroom_ratio": 0.25,
+          "torque_margin": 0.2742,
+          "efficiency_margin": 0.086,
+          "mass_budget_margin_kg": 8.9,
+          "belt_stretch_margin": -1.943,
+          "belt_reflected_inertia_margin": 0.325,
+          "belt_required_speed_mps": 0.6,
+          "belt_duty_cycle": 0.7,
+          "duty_weighted_load": 1.026,
+          "torque_demand_nm": 0.5886,
+          "rms_torque_nm": 0.4925,
+          "continuous_torque_nm": 0.48,
+          "intermittent_torque_nm": 0.75,
+          "mechanical_output_w": 147.9313,
+          "motor_loss_w": 30.9823,
+          "drive_loss_w": 9.3193,
+          "estimated_losses_w": 40.3015,
+          "motor_temp_rise_c": 16.1108,
+          "drive_temp_rise_c": 12.581,
+          "estimated_temp_rise_c": 16.1108,
+          "allowable_temp_rise_c": 60.0,
+          "continuous_thermal_margin": -0.026,
+          "intermittent_thermal_margin": 0.2152,
+          "temperature_rise_margin": 0.7315,
+          "drive_power_margin": 0.4102,
+          "thermal_margin": -0.026,
+          "thermal_mode": "continuous",
+          "effective_structural_load_n": 177.7572,
+          "estimated_max_deflection_mm": 0.3435,
+          "estimated_stress_proxy_mpa": 25.3939,
+          "structural_deflection_margin": 0.313,
+          "structural_stress_margin": 0.7884,
+          "structural_margin": 0.313,
+          "structural_safety_factor_proxy": 4.7255,
+          "controls_motion_profile_margin": 0.2,
+          "controls_torque_speed_margin": 0.2,
+          "controls_duty_margin": 0.3
+        },
+        "warnings": [
+          {
+            "code": "risk_belt_stretch_margin_low",
+            "message": "Belt stretch margin below threshold",
+            "severity": "high"
+          },
+          {
+            "code": "risk_thermal_margin_low",
+            "message": "Thermal margin below 0.1",
+            "severity": "high"
+          }
+        ],
+        "risk_flags": [
+          {
+            "code": "risk_belt_stretch_margin_low",
+            "message": "Belt stretch margin below threshold",
+            "severity": "high"
+          },
+          {
+            "code": "risk_thermal_margin_low",
+            "message": "Thermal margin below 0.1",
+            "severity": "high"
+          }
+        ]
+      },
+      "physics_status": "fail",
+      "physics_passed": false,
+      "physics_checks": [
+        {
+          "name": "drivetrain",
+          "status": "fail",
+          "passed": false,
+          "margins": {
+            "speed_headroom_ratio": 0.25,
+            "torque_margin": 0.2742,
+            "efficiency_margin": 0.086,
+            "mass_budget_margin_kg": 8.9,
+            "belt_stretch_margin": -1.943,
+            "belt_reflected_inertia_margin": 0.325,
+            "belt_required_speed_mps": 0.6,
+            "belt_duty_cycle": 0.7
+          },
+          "warnings": [
+            {
+              "code": "risk_belt_stretch_margin_low",
+              "message": "Belt stretch margin below threshold",
+              "severity": "high"
+            }
+          ]
+        },
+        {
+          "name": "thermal",
+          "status": "fail",
+          "passed": false,
+          "margins": {
+            "duty_weighted_load": 1.026,
+            "torque_demand_nm": 0.5886,
+            "rms_torque_nm": 0.4925,
+            "continuous_torque_nm": 0.48,
+            "intermittent_torque_nm": 0.75,
+            "mechanical_output_w": 147.9313,
+            "motor_loss_w": 30.9823,
+            "drive_loss_w": 9.3193,
+            "estimated_losses_w": 40.3015,
+            "motor_temp_rise_c": 16.1108,
+            "drive_temp_rise_c": 12.581,
+            "estimated_temp_rise_c": 16.1108,
+            "allowable_temp_rise_c": 60.0,
+            "continuous_thermal_margin": -0.026,
+            "intermittent_thermal_margin": 0.2152,
+            "temperature_rise_margin": 0.7315,
+            "drive_power_margin": 0.4102,
+            "thermal_margin": -0.026,
+            "thermal_mode": "continuous"
+          },
+          "warnings": [
+            {
+              "code": "risk_thermal_margin_low",
+              "message": "Thermal margin below 0.1",
+              "severity": "high"
+            }
+          ]
+        },
+        {
+          "name": "structural",
+          "status": "pass",
+          "passed": true,
+          "margins": {
+            "effective_structural_load_n": 177.7572,
+            "estimated_max_deflection_mm": 0.3435,
+            "estimated_stress_proxy_mpa": 25.3939,
+            "structural_deflection_margin": 0.313,
+            "structural_stress_margin": 0.7884,
+            "structural_margin": 0.313,
+            "structural_safety_factor_proxy": 4.7255
+          },
+          "warnings": []
+        },
+        {
+          "name": "controls",
+          "status": "pass",
+          "passed": true,
+          "margins": {
+            "controls_motion_profile_margin": 0.2,
+            "controls_torque_speed_margin": 0.2,
+            "controls_duty_margin": 0.3
+          },
+          "warnings": []
+        }
+      ],
+      "physics_margins": {
+        "speed_headroom_ratio": 0.25,
+        "torque_margin": 0.2742,
+        "efficiency_margin": 0.086,
+        "mass_budget_margin_kg": 8.9,
+        "belt_stretch_margin": -1.943,
+        "belt_reflected_inertia_margin": 0.325,
+        "belt_required_speed_mps": 0.6,
+        "belt_duty_cycle": 0.7,
+        "duty_weighted_load": 1.026,
+        "torque_demand_nm": 0.5886,
+        "rms_torque_nm": 0.4925,
+        "continuous_torque_nm": 0.48,
+        "intermittent_torque_nm": 0.75,
+        "mechanical_output_w": 147.9313,
+        "motor_loss_w": 30.9823,
+        "drive_loss_w": 9.3193,
+        "estimated_losses_w": 40.3015,
+        "motor_temp_rise_c": 16.1108,
+        "drive_temp_rise_c": 12.581,
+        "estimated_temp_rise_c": 16.1108,
+        "allowable_temp_rise_c": 60.0,
+        "continuous_thermal_margin": -0.026,
+        "intermittent_thermal_margin": 0.2152,
+        "temperature_rise_margin": 0.7315,
+        "drive_power_margin": 0.4102,
+        "thermal_margin": -0.026,
+        "thermal_mode": "continuous",
+        "effective_structural_load_n": 177.7572,
+        "estimated_max_deflection_mm": 0.3435,
+        "estimated_stress_proxy_mpa": 25.3939,
+        "structural_deflection_margin": 0.313,
+        "structural_stress_margin": 0.7884,
+        "structural_margin": 0.313,
+        "structural_safety_factor_proxy": 4.7255,
+        "controls_motion_profile_margin": 0.2,
+        "controls_torque_speed_margin": 0.2,
+        "controls_duty_margin": 0.3
+      },
+      "physics_warnings": [
+        {
+          "code": "risk_belt_stretch_margin_low",
+          "message": "Belt stretch margin below threshold",
+          "severity": "high"
+        },
+        {
+          "code": "risk_thermal_margin_low",
+          "message": "Thermal margin below 0.1",
+          "severity": "high"
+        }
+      ],
+      "physics_risk_flags": [
+        {
+          "code": "risk_belt_stretch_margin_low",
+          "message": "Belt stretch margin below threshold",
+          "severity": "high"
+        },
+        {
+          "code": "risk_thermal_margin_low",
+          "message": "Thermal margin below 0.1",
+          "severity": "high"
+        }
+      ],
+      "id": "belt_axis-M2-D2-T3",
+      "components": {
+        "motor_id": "M2",
+        "drive_id": "D2",
+        "transmission_id": "T3"
+      },
+      "performance": {
+        "achievable_speed_mps": 0.75,
+        "torque_margin": 0.27420998980632005,
+        "est_efficiency": 0.836,
+        "est_total_mass_kg": 3.1
+      },
+      "score_breakdown": {
+        "total": 0.4825,
+        "efficiency": {
+          "raw_metric": 0.836,
+          "normalized_metric": 0.836,
+          "applied_weight": 0.25,
+          "weighted_contribution": 0.209
+        },
+        "cost": {
+          "raw_metric": 425.0,
+          "normalized_metric": 0.2353,
+          "applied_weight": 0.25,
+          "weighted_contribution": 0.0588
+        },
+        "compactness": {
+          "raw_metric": 3.1,
+          "normalized_metric": 0.3226,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.0645
+        },
+        "performance_margin": {
+          "raw_metric": 0.2742,
+          "normalized_metric": 0.7742,
+          "applied_weight": 0.3,
+          "weighted_contribution": 0.2323
+        },
+        "lead_time_impact": {
+          "raw_metric": 21.0,
+          "normalized_metric": 0.3333,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.0667
+        },
+        "sourcing_risk": {
+          "raw_metric": 0.1,
+          "normalized_metric": 0.9,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.18
+        },
+        "engineering_fit": {
+          "raw_metric": 0.5058,
+          "normalized_metric": 0.5058,
+          "applied_weight": 0.35,
+          "weighted_contribution": 0.177
+        },
+        "physics_structural_margin": {
+          "raw_metric": 0.313,
+          "normalized_metric": 1.0,
+          "applied_weight": 0.15,
+          "weighted_contribution": 0.15
+        }
+      },
+      "risk_flags": [
+        {
+          "code": "risk_belt_stretch_margin_low",
+          "message": "Belt stretch margin below threshold",
+          "severity": "high"
+        },
+        {
+          "code": "risk_thermal_margin_low",
+          "message": "Thermal margin below 0.1",
+          "severity": "high"
+        }
+      ],
+      "confidence": {
+        "value": 0.65,
+        "rationale": "penalty=0.25; assumptions=1; low_margin=False; sparse_data=True"
+      },
+      "feasible": true,
+      "robustness": {
+        "level": "stable",
+        "volatility_index": 0.0
+      }
+    },
+    {
+      "simulation_summary": {
+        "adapter_version": "simulation-v1",
+        "status": "pass",
+        "checks": {
+          "motion_profile_feasible": true,
+          "torque_speed_margin_valid": true,
+          "thermal_load_sanity": true
+        },
+        "metrics": {
+          "duty_cycle": 0.7,
+          "torque_margin": 0.27420998980632005,
+          "achievable_speed": 0.75,
+          "required_speed": 0.6,
+          "thermal_index": 1.4761
+        }
+      },
+      "cad_artifact_ref": {
+        "artifact_id": null,
+        "artifact_uri": null,
+        "status": "skipped"
+      },
+      "physics_summary": {
+        "status": "fail",
+        "checks": [
+          {
+            "name": "drivetrain",
+            "status": "fail",
+            "passed": false,
+            "margins": {
+              "speed_headroom_ratio": 0.25,
+              "torque_margin": 0.2742,
+              "efficiency_margin": 0.0948,
+              "mass_budget_margin_kg": 8.5,
+              "belt_stretch_margin": -1.943,
+              "belt_reflected_inertia_margin": 0.325,
+              "belt_required_speed_mps": 0.6,
+              "belt_duty_cycle": 0.7
+            },
+            "warnings": [
+              {
+                "code": "risk_belt_stretch_margin_low",
+                "message": "Belt stretch margin below threshold",
+                "severity": "high"
+              }
+            ]
+          },
+          {
+            "name": "thermal",
+            "status": "fail",
+            "passed": false,
+            "margins": {
+              "duty_weighted_load": 1.026,
+              "torque_demand_nm": 0.5886,
+              "rms_torque_nm": 0.4925,
+              "continuous_torque_nm": 0.48,
+              "intermittent_torque_nm": 0.75,
+              "mechanical_output_w": 147.9313,
+              "motor_loss_w": 30.9823,
+              "drive_loss_w": 9.3073,
+              "estimated_losses_w": 40.2896,
+              "motor_temp_rise_c": 16.1108,
+              "drive_temp_rise_c": 9.7727,
+              "estimated_temp_rise_c": 16.1108,
+              "allowable_temp_rise_c": 60.0,
+              "continuous_thermal_margin": -0.026,
+              "intermittent_thermal_margin": 0.2152,
+              "temperature_rise_margin": 0.7315,
+              "drive_power_margin": 0.7811,
+              "thermal_margin": -0.026,
+              "thermal_mode": "continuous"
+            },
+            "warnings": [
+              {
+                "code": "risk_thermal_margin_low",
+                "message": "Thermal margin below 0.1",
+                "severity": "high"
+              }
+            ]
+          },
+          {
+            "name": "structural",
+            "status": "pass",
+            "passed": true,
+            "margins": {
+              "effective_structural_load_n": 182.466,
+              "estimated_max_deflection_mm": 0.3526,
+              "estimated_stress_proxy_mpa": 26.0666,
+              "structural_deflection_margin": 0.2948,
+              "structural_stress_margin": 0.7828,
+              "structural_margin": 0.2948,
+              "structural_safety_factor_proxy": 4.6036
+            },
+            "warnings": []
+          },
+          {
+            "name": "controls",
+            "status": "pass",
+            "passed": true,
+            "margins": {
+              "controls_motion_profile_margin": 0.2,
+              "controls_torque_speed_margin": 0.2,
+              "controls_duty_margin": 0.3
+            },
+            "warnings": []
+          }
+        ],
+        "margins": {
+          "speed_headroom_ratio": 0.25,
+          "torque_margin": 0.2742,
+          "efficiency_margin": 0.0948,
+          "mass_budget_margin_kg": 8.5,
+          "belt_stretch_margin": -1.943,
+          "belt_reflected_inertia_margin": 0.325,
+          "belt_required_speed_mps": 0.6,
+          "belt_duty_cycle": 0.7,
+          "duty_weighted_load": 1.026,
+          "torque_demand_nm": 0.5886,
+          "rms_torque_nm": 0.4925,
+          "continuous_torque_nm": 0.48,
+          "intermittent_torque_nm": 0.75,
+          "mechanical_output_w": 147.9313,
+          "motor_loss_w": 30.9823,
+          "drive_loss_w": 9.3073,
+          "estimated_losses_w": 40.2896,
+          "motor_temp_rise_c": 16.1108,
+          "drive_temp_rise_c": 9.7727,
+          "estimated_temp_rise_c": 16.1108,
+          "allowable_temp_rise_c": 60.0,
+          "continuous_thermal_margin": -0.026,
+          "intermittent_thermal_margin": 0.2152,
+          "temperature_rise_margin": 0.7315,
+          "drive_power_margin": 0.7811,
+          "thermal_margin": -0.026,
+          "thermal_mode": "continuous",
+          "effective_structural_load_n": 182.466,
+          "estimated_max_deflection_mm": 0.3526,
+          "estimated_stress_proxy_mpa": 26.0666,
+          "structural_deflection_margin": 0.2948,
+          "structural_stress_margin": 0.7828,
+          "structural_margin": 0.2948,
+          "structural_safety_factor_proxy": 4.6036,
+          "controls_motion_profile_margin": 0.2,
+          "controls_torque_speed_margin": 0.2,
+          "controls_duty_margin": 0.3
+        },
+        "warnings": [
+          {
+            "code": "risk_belt_stretch_margin_low",
+            "message": "Belt stretch margin below threshold",
+            "severity": "high"
+          },
+          {
+            "code": "risk_thermal_margin_low",
+            "message": "Thermal margin below 0.1",
+            "severity": "high"
+          }
+        ],
+        "risk_flags": [
+          {
+            "code": "risk_belt_stretch_margin_low",
+            "message": "Belt stretch margin below threshold",
+            "severity": "high"
+          },
+          {
+            "code": "risk_thermal_margin_low",
+            "message": "Thermal margin below 0.1",
+            "severity": "high"
+          }
+        ]
+      },
+      "physics_status": "fail",
+      "physics_passed": false,
+      "physics_checks": [
+        {
+          "name": "drivetrain",
+          "status": "fail",
+          "passed": false,
+          "margins": {
+            "speed_headroom_ratio": 0.25,
+            "torque_margin": 0.2742,
+            "efficiency_margin": 0.0948,
+            "mass_budget_margin_kg": 8.5,
+            "belt_stretch_margin": -1.943,
+            "belt_reflected_inertia_margin": 0.325,
+            "belt_required_speed_mps": 0.6,
+            "belt_duty_cycle": 0.7
+          },
+          "warnings": [
+            {
+              "code": "risk_belt_stretch_margin_low",
+              "message": "Belt stretch margin below threshold",
+              "severity": "high"
+            }
+          ]
+        },
+        {
+          "name": "thermal",
+          "status": "fail",
+          "passed": false,
+          "margins": {
+            "duty_weighted_load": 1.026,
+            "torque_demand_nm": 0.5886,
+            "rms_torque_nm": 0.4925,
+            "continuous_torque_nm": 0.48,
+            "intermittent_torque_nm": 0.75,
+            "mechanical_output_w": 147.9313,
+            "motor_loss_w": 30.9823,
+            "drive_loss_w": 9.3073,
+            "estimated_losses_w": 40.2896,
+            "motor_temp_rise_c": 16.1108,
+            "drive_temp_rise_c": 9.7727,
+            "estimated_temp_rise_c": 16.1108,
+            "allowable_temp_rise_c": 60.0,
+            "continuous_thermal_margin": -0.026,
+            "intermittent_thermal_margin": 0.2152,
+            "temperature_rise_margin": 0.7315,
+            "drive_power_margin": 0.7811,
+            "thermal_margin": -0.026,
+            "thermal_mode": "continuous"
+          },
+          "warnings": [
+            {
+              "code": "risk_thermal_margin_low",
+              "message": "Thermal margin below 0.1",
+              "severity": "high"
+            }
+          ]
+        },
+        {
+          "name": "structural",
+          "status": "pass",
+          "passed": true,
+          "margins": {
+            "effective_structural_load_n": 182.466,
+            "estimated_max_deflection_mm": 0.3526,
+            "estimated_stress_proxy_mpa": 26.0666,
+            "structural_deflection_margin": 0.2948,
+            "structural_stress_margin": 0.7828,
+            "structural_margin": 0.2948,
+            "structural_safety_factor_proxy": 4.6036
+          },
+          "warnings": []
+        },
+        {
+          "name": "controls",
+          "status": "pass",
+          "passed": true,
+          "margins": {
+            "controls_motion_profile_margin": 0.2,
+            "controls_torque_speed_margin": 0.2,
+            "controls_duty_margin": 0.3
+          },
+          "warnings": []
+        }
+      ],
+      "physics_margins": {
+        "speed_headroom_ratio": 0.25,
+        "torque_margin": 0.2742,
+        "efficiency_margin": 0.0948,
+        "mass_budget_margin_kg": 8.5,
+        "belt_stretch_margin": -1.943,
+        "belt_reflected_inertia_margin": 0.325,
+        "belt_required_speed_mps": 0.6,
+        "belt_duty_cycle": 0.7,
+        "duty_weighted_load": 1.026,
+        "torque_demand_nm": 0.5886,
+        "rms_torque_nm": 0.4925,
+        "continuous_torque_nm": 0.48,
+        "intermittent_torque_nm": 0.75,
+        "mechanical_output_w": 147.9313,
+        "motor_loss_w": 30.9823,
+        "drive_loss_w": 9.3073,
+        "estimated_losses_w": 40.2896,
+        "motor_temp_rise_c": 16.1108,
+        "drive_temp_rise_c": 9.7727,
+        "estimated_temp_rise_c": 16.1108,
+        "allowable_temp_rise_c": 60.0,
+        "continuous_thermal_margin": -0.026,
+        "intermittent_thermal_margin": 0.2152,
+        "temperature_rise_margin": 0.7315,
+        "drive_power_margin": 0.7811,
+        "thermal_margin": -0.026,
+        "thermal_mode": "continuous",
+        "effective_structural_load_n": 182.466,
+        "estimated_max_deflection_mm": 0.3526,
+        "estimated_stress_proxy_mpa": 26.0666,
+        "structural_deflection_margin": 0.2948,
+        "structural_stress_margin": 0.7828,
+        "structural_margin": 0.2948,
+        "structural_safety_factor_proxy": 4.6036,
+        "controls_motion_profile_margin": 0.2,
+        "controls_torque_speed_margin": 0.2,
+        "controls_duty_margin": 0.3
+      },
+      "physics_warnings": [
+        {
+          "code": "risk_belt_stretch_margin_low",
+          "message": "Belt stretch margin below threshold",
+          "severity": "high"
+        },
+        {
+          "code": "risk_thermal_margin_low",
+          "message": "Thermal margin below 0.1",
+          "severity": "high"
+        }
+      ],
+      "physics_risk_flags": [
+        {
+          "code": "risk_belt_stretch_margin_low",
+          "message": "Belt stretch margin below threshold",
+          "severity": "high"
+        },
+        {
+          "code": "risk_thermal_margin_low",
+          "message": "Thermal margin below 0.1",
+          "severity": "high"
+        }
+      ],
+      "id": "belt_axis-M2-D3-T3",
+      "components": {
+        "motor_id": "M2",
+        "drive_id": "D3",
+        "transmission_id": "T3"
+      },
+      "performance": {
+        "achievable_speed_mps": 0.75,
+        "torque_margin": 0.27420998980632005,
+        "est_efficiency": 0.8448,
+        "est_total_mass_kg": 3.5
+      },
+      "score_breakdown": {
+        "total": 0.4704,
+        "efficiency": {
+          "raw_metric": 0.8448,
+          "normalized_metric": 0.8448,
+          "applied_weight": 0.25,
+          "weighted_contribution": 0.2112
+        },
+        "cost": {
+          "raw_metric": 515.0,
+          "normalized_metric": 0.1942,
+          "applied_weight": 0.25,
+          "weighted_contribution": 0.0485
+        },
+        "compactness": {
+          "raw_metric": 3.5,
+          "normalized_metric": 0.2857,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.0571
+        },
+        "performance_margin": {
+          "raw_metric": 0.2742,
+          "normalized_metric": 0.7742,
+          "applied_weight": 0.3,
+          "weighted_contribution": 0.2323
+        },
+        "lead_time_impact": {
+          "raw_metric": 21.0,
+          "normalized_metric": 0.3333,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.0667
+        },
+        "sourcing_risk": {
+          "raw_metric": 0.1,
+          "normalized_metric": 0.9,
+          "applied_weight": 0.2,
+          "weighted_contribution": 0.18
+        },
+        "engineering_fit": {
+          "raw_metric": 0.5006,
+          "normalized_metric": 0.5006,
+          "applied_weight": 0.35,
+          "weighted_contribution": 0.1752
+        },
+        "physics_structural_margin": {
+          "raw_metric": 0.2948,
+          "normalized_metric": 1.0,
+          "applied_weight": 0.15,
+          "weighted_contribution": 0.15
+        }
+      },
+      "risk_flags": [
+        {
+          "code": "risk_belt_stretch_margin_low",
+          "message": "Belt stretch margin below threshold",
+          "severity": "high"
+        },
+        {
+          "code": "risk_thermal_margin_low",
+          "message": "Thermal margin below 0.1",
+          "severity": "high"
+        }
+      ],
+      "confidence": {
+        "value": 0.65,
+        "rationale": "penalty=0.25; assumptions=1; low_margin=False; sparse_data=True"
+      },
+      "feasible": true,
+      "robustness": {
+        "level": "stable",
+        "volatility_index": 0.0
+      }
+    }
+  ],
+  "assumptions": {
+    "belt-driven-linear-axis": {
+      "selected_topology_rationale": "belt topology selected for linear-axis simplicity and catalog availability",
+      "derating_assumptions": "duty-cycle derating applied to torque availability",
+      "fallback_defaults_used": [
+        "max_speed converted to m/s"
+      ]
+    },
+    "ball-screw-linear-axis": {
+      "selected_topology_rationale": "ball-screw selected for precision/backlash-sensitive linear motion",
+      "derating_assumptions": "continuous duty applies stronger thermal derating",
+      "fallback_defaults_used": [
+        "assumed preloaded nut class C7"
+      ]
+    },
+    "direct-drive-rotary-axis": {
+      "selected_topology_rationale": "direct-drive selected for low backlash rotary motion",
+      "derating_assumptions": "motor-only thermal path applied",
+      "fallback_defaults_used": [
+        "assumed rigid coupling to payload inertia"
+      ]
+    }
+  },
+  "policy_version": "v1",
+  "topology_selection_trace": {
+    "selected": [
+      "belt-driven-linear-axis",
+      "ball-screw-linear-axis",
+      "direct-drive-rotary-axis"
+    ],
+    "rejected": {}
+  },
+  "topology_candidate_stats": {
+    "belt-driven-linear-axis": {
+      "generated": 22,
+      "feasible": 2,
+      "rejected": 20
+    },
+    "ball-screw-linear-axis": {
+      "generated": 30,
+      "feasible": 0,
+      "rejected": 30
+    },
+    "direct-drive-rotary-axis": {
+      "generated": 1,
+      "feasible": 1,
+      "rejected": 0
+    }
+  },
+  "warnings": [
+    "cad adapter disabled"
+  ]
+}
