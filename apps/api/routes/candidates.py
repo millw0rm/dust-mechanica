@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Body, Header, HTTPException, Query
 import sqlite3
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, Field
 from packages.domain.repositories.jobs import JobRepository
 from packages.domain.schemas.requirements import RequirementInput
 from packages.domain.schemas.responses import CandidateGenerationResponse, JobDetailResponse, FeedbackRequest, TelemetrySlicesResponse, TelemetryDriftResponse
@@ -24,7 +24,12 @@ class GenerateRequest(BaseModel):
 
 class ToolchainRunRequest(BaseModel):
     candidate_id: str
-    selected_tools: list[str] = Field(min_length=1)
+    tool_names: list[str] = Field(
+        min_length=1,
+        validation_alias=AliasChoices("tool_names", "selected_tools"),
+        description="Toolchain run names to dispatch; selected_tools is accepted for backward compatibility.",
+    )
+    dry_run: bool = False
 
 
 GENERATE_CONTROL_FIELDS = {
@@ -142,14 +147,18 @@ def run_job_toolchain(id: str, payload: ToolchainRunRequest):
     if not (candidate.get("toolchain_results") or {}).get("tool_runs"):
         raise HTTPException(409, "candidate has no toolchain tool_runs")
 
-    execution = ToolchainExecutionService().run_selected_tools(candidate=candidate, selected_tools=payload.selected_tools)
-    candidate.setdefault("toolchain_results", {})["latest_execution"] = execution
-    candidate["toolchain_artifact_uris"] = execution["artifact_uris"]
+    execution = ToolchainExecutionService().run_selected_tools(
+        candidate=candidate, selected_tools=payload.tool_names, dry_run=payload.dry_run
+    )
 
-    report = job.get("report") or {}
-    report.setdefault("toolchain_runs", [])
-    report["toolchain_runs"].append(execution)
-    repo.update(id, result=result, report=report)
+    if not payload.dry_run:
+        candidate.setdefault("toolchain_results", {})["latest_execution"] = execution
+        candidate["toolchain_artifact_uris"] = execution["artifact_uris"]
+
+        report = job.get("report") or {}
+        report.setdefault("toolchain_runs", [])
+        report["toolchain_runs"].append(execution)
+        repo.update(id, result=result, report=report)
 
     return {"schema_version": "2.1", "job_id": id, **execution}
 

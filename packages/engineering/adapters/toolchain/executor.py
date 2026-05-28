@@ -6,9 +6,6 @@ from typing import Any
 from packages.engineering.adapters.artifacts.base import ArtifactStore
 from packages.engineering.adapters.artifacts.local import LocalArtifactStore
 from packages.engineering.adapters.toolchain.runners.cadquery import CadQueryRunner
-from packages.engineering.adapters.toolchain.runners.calculix import CalculixCodeAsterRunner
-from packages.engineering.adapters.toolchain.runners.freecad import FreeCADRunner
-from packages.engineering.adapters.toolchain.runners.openmdao import OpenMDAORunner
 
 
 @dataclass
@@ -21,8 +18,9 @@ class ToolchainExecutionService:
     """
 
     artifact_store: ArtifactStore = field(default_factory=LocalArtifactStore)
+    supported_tools: frozenset[str] = frozenset({"CadQuery"})
 
-    def run_selected_tools(self, *, candidate: dict[str, Any], selected_tools: list[str]) -> dict[str, Any]:
+    def run_selected_tools(self, *, candidate: dict[str, Any], selected_tools: list[str], dry_run: bool = False) -> dict[str, Any]:
         toolchain_results = candidate.get("toolchain_results") or {}
         tool_runs = toolchain_results.get("tool_runs") or []
         runs_by_tool = {run.get("tool"): run for run in tool_runs if isinstance(run, dict) and run.get("tool")}
@@ -34,17 +32,13 @@ class ToolchainExecutionService:
             if tool_run is None:
                 executions.append(self._planned_only(tool_name, "No matching tool_run contract exists for this candidate."))
                 continue
-            runnable_tool_run = self._with_upstream_artifacts(tool_run, upstream_artifact_uris)
-            if tool_name == "CadQuery":
-                execution = {"tool": tool_name, **CadQueryRunner(self.artifact_store).run(runnable_tool_run)}
-            elif tool_name == "FreeCAD":
-                execution = {"tool": tool_name, **FreeCADRunner(self.artifact_store).run(runnable_tool_run)}
-            elif tool_name == "CalculiX / Code_Aster":
-                execution = {"tool": tool_name, **CalculixCodeAsterRunner(self.artifact_store).run(runnable_tool_run)}
-            elif tool_name == "OpenMDAO":
-                execution = {"tool": tool_name, **OpenMDAORunner(self.artifact_store).run(runnable_tool_run)}
+            if dry_run:
+                execution = self._planned_only(tool_name, "Dry run requested; execution was planned but not dispatched.", tool_run=tool_run)
+            elif tool_name not in self.supported_tools:
+                execution = self._unavailable(tool_name, "No concrete runner is configured for this tool yet.", tool_run=tool_run)
             else:
-                execution = self._planned_only(tool_name, "No concrete runner is configured for this tool yet.", tool_run=tool_run)
+                runnable_tool_run = self._with_upstream_artifacts(tool_run, upstream_artifact_uris)
+                execution = {"tool": tool_name, **CadQueryRunner(self.artifact_store).run(runnable_tool_run)}
             executions.append(execution)
             if execution.get("artifact_uris"):
                 upstream_artifact_uris[tool_name] = execution["artifact_uris"]
@@ -59,6 +53,8 @@ class ToolchainExecutionService:
             "candidate_id": candidate.get("id"),
             "status": status,
             "selected_tools": self._unique(selected_tools),
+            "tool_names": self._unique(selected_tools),
+            "dry_run": dry_run,
             "executions": executions,
             "artifact_uris": artifact_uris,
         }
@@ -94,9 +90,17 @@ class ToolchainExecutionService:
         return "partial"
 
     def _planned_only(self, tool_name: str, reason: str, tool_run: dict[str, Any] | None = None) -> dict[str, Any]:
+        return self._non_executed(tool_name, "planned_only", reason, tool_run=tool_run)
+
+    def _unavailable(self, tool_name: str, reason: str, tool_run: dict[str, Any] | None = None) -> dict[str, Any]:
+        return self._non_executed(tool_name, "unavailable", reason, tool_run=tool_run)
+
+    def _non_executed(
+        self, tool_name: str, status: str, reason: str, tool_run: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         payload = {
             "tool": tool_name,
-            "status": "planned_only",
+            "status": status,
             "artifact_uris": {},
             "warnings": [reason],
         }
