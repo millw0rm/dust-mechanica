@@ -29,22 +29,21 @@ class JobRepository:
                 normalized_input text, validation text, result text,
                 error text, trace_id text, request_id text,
                 created_at text, updated_at text, completed_at text,
-                review text, report text
+                review text, report text, idempotency_key text, artifact_version text, cancelled integer default 0
                 )"""
             )
             cols = [r[1] for r in c.execute("pragma table_info(jobs)").fetchall()]
-            if "review" not in cols:
-                c.execute("alter table jobs add column review text")
-            if "report" not in cols:
-                c.execute("alter table jobs add column report text")
+            for add in [("review","text"),("report","text"),("idempotency_key","text"),("artifact_version","text"),("cancelled","integer default 0")]:
+                if add[0] not in cols:
+                    c.execute(f"alter table jobs add column {add[0]} {add[1]}")
 
     def create(self, normalized_input: dict, validation: dict, trace_id: str, request_id: str):
         job_id = str(uuid.uuid4())
         now = utcnow()
         with self._lock, self._conn() as c:
-            c.execute("insert into jobs values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (
+            c.execute("insert into jobs (id,status,progress,normalized_input,validation,result,error,trace_id,request_id,created_at,updated_at,completed_at,review,report,idempotency_key,artifact_version,cancelled) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (
                 job_id, JobStatus.queued.value, 0.0, json.dumps(normalized_input), json.dumps(validation), None,
-                None, trace_id, request_id, now, now, None, None, None,
+                None, trace_id, request_id, now, now, None, None, None, request_id or None, "v1", 0,
             ))
         return job_id
 
@@ -72,7 +71,7 @@ class JobRepository:
             row = c.execute("select * from jobs where id=?", (job_id,)).fetchone()
         if not row:
             return None
-        cols = ["id","status","progress","normalized_input","validation","result","error","trace_id","request_id","created_at","updated_at","completed_at","review","report"]
+        cols = ["id","status","progress","normalized_input","validation","result","error","trace_id","request_id","created_at","updated_at","completed_at","review","report","idempotency_key","artifact_version","cancelled"]
         d = dict(zip(cols, row))
         for k in ("normalized_input", "validation", "result", "review", "report"):
             d[k] = json.loads(d[k]) if d[k] else None
@@ -82,3 +81,11 @@ class JobRepository:
         with self._conn() as c:
             row = c.execute("select id from jobs where status=? order by created_at asc limit 1", (JobStatus.queued.value,)).fetchone()
         return row[0] if row else None
+
+
+    def find_by_idempotency_key(self, key: str):
+        if not key:
+            return None
+        with self._conn() as c:
+            row = c.execute("select id from jobs where idempotency_key=? order by created_at desc limit 1", (key,)).fetchone()
+        return self.get(row[0]) if row else None

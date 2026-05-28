@@ -1,3 +1,4 @@
+
 from pydantic import BaseModel, Field
 from packages.domain.schemas.candidate import Candidate
 from packages.domain.schemas.common import JobStatus
@@ -19,6 +20,8 @@ class CandidateGenerationResponse(BaseModel):
     conflicts: list[str] = Field(default_factory=list)
     assumptions: dict
     policy_version: str = "v1"
+    topology_selection_trace: dict = Field(default_factory=dict)
+    topology_candidate_stats: dict = Field(default_factory=dict)
 
 
 class JobDetailResponse(BaseModel):

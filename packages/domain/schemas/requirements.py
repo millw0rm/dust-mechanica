@@ -1,3 +1,4 @@
+
 from pydantic import BaseModel, Field
 from packages.domain.schemas.common import PriorityWeights, Quantity
 
@@ -7,6 +8,8 @@ class FunctionalTargets(BaseModel):
     max_speed: Quantity
     payload_mass: Quantity
     duty_cycle: float = Field(..., ge=0.0, le=1.0)
+    backlash_tolerance_mm: float | None = Field(default=None, ge=0.0)
+    precision_target_mm: float | None = Field(default=None, ge=0.0)
 
 
 class Constraints(BaseModel):

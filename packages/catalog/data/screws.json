@@ -1,0 +1,16 @@
+[
+  {
+    "id": "screw-1605",
+    "lead_mm": 5,
+    "efficiency": 0.9,
+    "mass_kg": 1.2,
+    "cost": 140
+  },
+  {
+    "id": "screw-1610",
+    "lead_mm": 10,
+    "efficiency": 0.88,
+    "mass_kg": 1.4,
+    "cost": 180
+  }
+]
