@@ -31,6 +31,7 @@ class ScoreBreakdown(BaseModel):
     lead_time_impact: ScoreDimension | None = None
     sourcing_risk: ScoreDimension | None = None
     engineering_fit: ScoreDimension | None = None
+    physics_structural_margin: ScoreDimension | None = None
 
 
 class Robustness(BaseModel):
