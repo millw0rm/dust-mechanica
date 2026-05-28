@@ -58,4 +58,4 @@ def score_candidate(candidate, priorities, objective="balanced", physics_margins
 
 
 def rank_candidates(candidates):
-    return sorted(candidates, key=lambda c: c["score_breakdown"]["total"], reverse=True)
+    return sorted(candidates, key=lambda c: (-c["score_breakdown"]["total"], c["id"]))

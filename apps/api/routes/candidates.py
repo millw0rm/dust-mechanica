@@ -27,11 +27,21 @@ class ToolchainRunRequest(BaseModel):
     selected_tools: list[str] = Field(min_length=1)
 
 
+GENERATE_CONTROL_FIELDS = {
+    "async_mode",
+    "allowed_topologies",
+    "excluded_topologies",
+    "explain_topology_selection",
+    "toolchain_enabled",
+}
+
+
 def _coerce_generate_request(payload: dict, async_mode: bool | None) -> GenerateRequest:
     if "requirement" in payload:
         data = dict(payload)
     else:
-        data = {"requirement": payload}
+        data = {key: payload[key] for key in GENERATE_CONTROL_FIELDS if key in payload}
+        data["requirement"] = {key: value for key, value in payload.items() if key not in GENERATE_CONTROL_FIELDS}
     if async_mode is not None:
         data["async_mode"] = async_mode
     return GenerateRequest.model_validate(data)

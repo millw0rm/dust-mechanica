@@ -1,17 +1,17 @@
 from copy import deepcopy
 from packages.domain.schemas.requirements import RequirementInput
-from packages.engineering.units import normalize_quantity
+from packages.engineering.units import canonical_unit, normalize_quantity
 
 
 def normalize_requirement(req: RequirementInput) -> RequirementInput:
     req = deepcopy(req)
     ft = req.functional_targets
     ft.travel.value = normalize_quantity(ft.travel.value, ft.travel.unit, "m")
-    ft.travel.unit = "m"
+    ft.travel.unit = canonical_unit("m")
     ft.max_speed.value = normalize_quantity(ft.max_speed.value, ft.max_speed.unit, "m/s")
-    ft.max_speed.unit = "m/s"
+    ft.max_speed.unit = canonical_unit("m/s")
     ft.payload_mass.value = normalize_quantity(ft.payload_mass.value, ft.payload_mass.unit, "kg")
-    ft.payload_mass.unit = "kg"
+    ft.payload_mass.unit = canonical_unit("kg")
     return req
 
 

@@ -24,6 +24,22 @@ def _round4(value: float) -> float:
     return round(float(value), 4)
 
 
+def _as_bool(value, default: bool = True) -> bool:
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "1", "yes", "y", "pass", "passed", "feasible"}:
+            return True
+        if normalized in {"false", "0", "no", "n", "fail", "failed", "infeasible"}:
+            return False
+    return default
+
+
 def _propose_updates(current_policy, feedback_rows: list[dict], benchmark_rows: list[dict]) -> dict:
     # Aggregate outcome signals
     avg_lead_error = mean(abs(float(r.get("lead_time_error_days", 0.0))) for r in feedback_rows)
@@ -31,8 +47,8 @@ def _propose_updates(current_policy, feedback_rows: list[dict], benchmark_rows: 
     avg_margin = mean(float(r.get("observed_margin", 0.0)) for r in feedback_rows)
     avg_eff = mean(float(r.get("observed_efficiency", 0.0)) for r in feedback_rows)
 
-    expected_pass_rate = mean(1.0 if bool(b.get("expected_feasible", True)) else 0.0 for b in benchmark_rows)
-    observed_pass_rate = mean(1.0 if bool(b.get("observed_feasible", True)) else 0.0 for b in benchmark_rows)
+    expected_pass_rate = mean(1.0 if _as_bool(b.get("expected_feasible"), True) else 0.0 for b in benchmark_rows)
+    observed_pass_rate = mean(1.0 if _as_bool(b.get("observed_feasible"), True) else 0.0 for b in benchmark_rows)
     feasibility_gap = observed_pass_rate - expected_pass_rate
 
     rt = current_policy.risk_thresholds
@@ -115,11 +131,6 @@ def recalibrate_policy(
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / "latest.json"
     out_path.write_text(json.dumps(proposal, indent=2))
-
-    policy_v2_dir = Path("packages/engineering/policy/v2")
-    policy_v2_dir.mkdir(parents=True, exist_ok=True)
-    if proposal["candidate_policy"] is not None:
-        (policy_v2_dir / "candidate.scoring.json").write_text(json.dumps(proposal["candidate_policy"], indent=2))
 
     return proposal
 
