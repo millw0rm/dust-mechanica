@@ -22,12 +22,18 @@ class StructuralLimits(BaseModel):
     min_structural_safety_factor_proxy: float = Field(gt=0)
 
 
+class ThermalLimits(BaseModel):
+    max_temp_rise_c: float = Field(gt=0)
+    min_thermal_margin: float
+
+
 class Policy(BaseModel):
     version: str
     risk_thresholds: RiskThresholds
     topology_thresholds: dict[str, dict[str, float]] = Field(default_factory=dict)
     weight_perturbation: WeightPerturbation
     structural_limits: StructuralLimits
+    thermal_limits: ThermalLimits
 
 
 @lru_cache(maxsize=4)

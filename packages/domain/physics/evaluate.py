@@ -1,6 +1,7 @@
 from packages.domain.physics.models import PhysicsMargins, PhysicsResult, PhysicsWarnings
 from packages.domain.physics.checks import belt_axis, ball_screw, direct_drive
 from packages.domain.physics.structural import estimate_beam_structural_response
+from packages.domain.physics.thermal import estimate_thermal_response
 from packages.engineering.policy.loader import load_policy
 
 
@@ -71,6 +72,31 @@ def evaluate_candidate_physics(candidate: dict, requirements) -> PhysicsResult:
     second_moment_area_m4 = float(transmission.get("second_moment_area_m4", 8.0e-8))
     section_modulus_m3 = float(transmission.get("section_modulus_m3", 1.4e-6))
     allowable_stress_pa = float(transmission.get("allowable_stress_pa", 120_000_000.0))
+    thermal = estimate_thermal_response(
+        duty_cycle=float(requirements.functional_targets.duty_cycle),
+        required_speed_mps=required_speed,
+        achievable_speed_mps=achievable_speed,
+        torque_margin=torque_margin,
+        motor=candidate.get("motor", {}),
+    )
+    merged_margins.update(thermal)
+    if thermal["estimated_temp_rise_c"] > policy.thermal_limits.max_temp_rise_c:
+        warnings.append(
+            PhysicsWarnings(
+                code="PHYS_THERMAL_TEMP_RISE_HIGH",
+                message=f"Estimated temp rise exceeds {policy.thermal_limits.max_temp_rise_c} C",
+                severity="high",
+            )
+        )
+    if thermal["thermal_margin"] < policy.thermal_limits.min_thermal_margin:
+        warnings.append(
+            PhysicsWarnings(
+                code="risk_thermal_margin_low",
+                message=f"Thermal margin below {policy.thermal_limits.min_thermal_margin}",
+                severity="medium",
+            )
+        )
+
     structural = estimate_beam_structural_response(
         support_condition=support_condition,
         span_m=span_m,

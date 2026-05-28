@@ -1,7 +1,57 @@
 [
-  {"id":"M1","power_w":120,"max_rpm":2500,"torque_nm":0.45,"mass_kg":0.8,"cost":110},
-  {"id":"M2","power_w":220,"max_rpm":3000,"torque_nm":0.75,"mass_kg":1.1,"cost":160},
-  {"id":"M3","power_w":400,"max_rpm":3500,"torque_nm":1.4,"mass_kg":1.8,"cost":240},
-  {"id":"M4","power_w":750,"max_rpm":3000,"torque_nm":2.4,"mass_kg":3.0,"cost":380},
-  {"id":"M5","power_w":100,"max_rpm":2000,"torque_nm":0.30,"mass_kg":0.7,"cost":90}
+  {
+    "id": "M1",
+    "power_w": 120,
+    "max_rpm": 2500,
+    "torque_nm": 0.45,
+    "mass_kg": 0.8,
+    "cost": 110,
+    "thermal_resistance_c_per_w": 1.8,
+    "copper_resistance_ohm": 0.6,
+    "catalog_loss_fraction": 0.16
+  },
+  {
+    "id": "M2",
+    "power_w": 220,
+    "max_rpm": 3000,
+    "torque_nm": 0.75,
+    "mass_kg": 1.1,
+    "cost": 160,
+    "thermal_resistance_c_per_w": 1.8,
+    "copper_resistance_ohm": 0.6,
+    "catalog_loss_fraction": 0.16
+  },
+  {
+    "id": "M3",
+    "power_w": 400,
+    "max_rpm": 3500,
+    "torque_nm": 1.4,
+    "mass_kg": 1.8,
+    "cost": 240,
+    "thermal_resistance_c_per_w": 1.8,
+    "copper_resistance_ohm": 0.6,
+    "catalog_loss_fraction": 0.16
+  },
+  {
+    "id": "M4",
+    "power_w": 750,
+    "max_rpm": 3000,
+    "torque_nm": 2.4,
+    "mass_kg": 3.0,
+    "cost": 380,
+    "thermal_resistance_c_per_w": 1.8,
+    "copper_resistance_ohm": 0.6,
+    "catalog_loss_fraction": 0.16
+  },
+  {
+    "id": "M5",
+    "power_w": 100,
+    "max_rpm": 2000,
+    "torque_nm": 0.3,
+    "mass_kg": 0.7,
+    "cost": 90,
+    "thermal_resistance_c_per_w": 1.8,
+    "copper_resistance_ohm": 0.6,
+    "catalog_loss_fraction": 0.16
+  }
 ]
