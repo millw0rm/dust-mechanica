@@ -15,12 +15,19 @@ class Performance(BaseModel):
     est_total_mass_kg: float = Field(..., ge=0.0)
 
 
+class ScoreDimension(BaseModel):
+    raw_metric: float
+    normalized_metric: float
+    applied_weight: float
+    weighted_contribution: float
+
+
 class ScoreBreakdown(BaseModel):
     total: float
-    efficiency: float
-    cost: float
-    compactness: float
-    performance_margin: float
+    efficiency: ScoreDimension
+    cost: ScoreDimension
+    compactness: ScoreDimension
+    performance_margin: ScoreDimension
 
 
 class Candidate(BaseModel):
