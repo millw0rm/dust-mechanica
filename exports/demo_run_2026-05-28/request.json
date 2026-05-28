@@ -1,0 +1,31 @@
+{
+  "decision_objective": "balanced",
+  "topology": "belt-driven-linear-axis",
+  "functional_targets": {
+    "travel": {
+      "value": 800.0,
+      "unit": "mm"
+    },
+    "max_speed": {
+      "value": 1200.0,
+      "unit": "mm/s"
+    },
+    "payload_mass": {
+      "value": 3.0,
+      "unit": "kg"
+    },
+    "duty_cycle": 0.7,
+    "backlash_tolerance_mm": null,
+    "precision_target_mm": null
+  },
+  "constraints": {
+    "max_motor_power_w": 400.0,
+    "max_total_mass_kg": 8.0
+  },
+  "priorities": {
+    "efficiency": 0.2,
+    "cost": 0.3,
+    "compactness": 0.2,
+    "performance_margin": 0.3
+  }
+}

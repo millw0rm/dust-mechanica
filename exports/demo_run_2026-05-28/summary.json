@@ -1,0 +1,29 @@
+{
+  "candidates": 4,
+  "top_candidate_id": null,
+  "assumptions": {
+    "belt-driven-linear-axis": {
+      "selected_topology_rationale": "belt topology selected for linear-axis simplicity and catalog availability",
+      "derating_assumptions": "duty-cycle derating applied to torque availability",
+      "fallback_defaults_used": [
+        "max_speed converted to m/s"
+      ]
+    },
+    "ball-screw-linear-axis": {
+      "selected_topology_rationale": "ball-screw selected for precision/backlash-sensitive linear motion",
+      "derating_assumptions": "continuous duty applies stronger thermal derating",
+      "fallback_defaults_used": [
+        "assumed preloaded nut class C7"
+      ]
+    },
+    "direct-drive-rotary-axis": {
+      "selected_topology_rationale": "direct-drive selected for low backlash rotary motion",
+      "derating_assumptions": "motor-only thermal path applied",
+      "fallback_defaults_used": [
+        "assumed rigid coupling to payload inertia"
+      ]
+    }
+  },
+  "issues": [],
+  "conflicts": []
+}
