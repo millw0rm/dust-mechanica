@@ -22,6 +22,7 @@ class CandidateGenerationResponse(BaseModel):
     policy_version: str = "v1"
     topology_selection_trace: dict = Field(default_factory=dict)
     topology_candidate_stats: dict = Field(default_factory=dict)
+    warnings: list[str] = Field(default_factory=list)
 
 
 class JobDetailResponse(BaseModel):

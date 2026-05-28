@@ -17,6 +17,7 @@ class GenerateRequest(BaseModel):
     allowed_topologies: list[str] | None = None
     excluded_topologies: list[str] | None = None
     explain_topology_selection: bool = False
+    toolchain_enabled: bool = True
 
 
 @router.post('/candidates/generate')
@@ -28,7 +29,7 @@ def generate(payload: GenerateRequest, x_request_id: str | None = Header(default
         v = {"issues": [], "missing": [], "conflicts": []}
         job_id = repo.create(payload.requirement.model_dump(), v, x_trace_id or "", idempotency_key or x_request_id or "")
         return {"schema_version": "2.0", "job_id": job_id, "status": "queued"}
-    result = run_generation_pipeline(payload.requirement, allowed_topologies=payload.allowed_topologies, excluded_topologies=payload.excluded_topologies, explain_topology_selection=payload.explain_topology_selection)
+    result = run_generation_pipeline(payload.requirement, allowed_topologies=payload.allowed_topologies, excluded_topologies=payload.excluded_topologies, explain_topology_selection=payload.explain_topology_selection, toolchain_enabled=payload.toolchain_enabled)
     return CandidateGenerationResponse(**result)
 
 

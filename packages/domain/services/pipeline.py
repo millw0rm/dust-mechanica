@@ -10,6 +10,7 @@ from packages.domain.topologies.registry import get_topology
 from packages.domain.services.topology_selector import select_topologies
 from packages.engineering.adapters.simulation.v1 import SimulationAdapterV1
 from packages.engineering.adapters.cad.v1 import CADAdapterV1
+from packages.engineering.adapters.toolchain.v1 import OpenSourceToolchainAdapterV1
 from packages.domain.physics.evaluate import evaluate_candidate_physics
 
 
@@ -19,7 +20,7 @@ def compute_confidence(assumption_count: int, low_margin: bool, sparse_data: boo
     return Confidence(value=round(value, 2), rationale=f"penalty={penalty:.2f}; assumptions={assumption_count}; low_margin={low_margin}; sparse_data={sparse_data}")
 
 
-def run_generation_pipeline(req, *, allowed_topologies=None, excluded_topologies=None, explain_topology_selection=False, sim_enabled=True, cad_enabled=True):
+def run_generation_pipeline(req, *, allowed_topologies=None, excluded_topologies=None, explain_topology_selection=False, sim_enabled=True, cad_enabled=True, toolchain_enabled=True):
     v = validate_requirement(req)
     normalized = v["normalized"]
     catalog = load_catalog()
@@ -30,9 +31,11 @@ def run_generation_pipeline(req, *, allowed_topologies=None, excluded_topologies
     topology_stats = {}
     sim = SimulationAdapterV1() if sim_enabled else None
     cad = CADAdapterV1() if cad_enabled else None
+    toolchain = OpenSourceToolchainAdapterV1() if toolchain_enabled else None
     warnings = []
     if not sim_enabled: warnings.append("simulation adapter disabled")
     if not cad_enabled: warnings.append("cad adapter disabled")
+    if not toolchain_enabled: warnings.append("open-source toolchain adapter disabled")
 
     for topology_name in selection["selected"]:
         plugin = get_topology(topology_name)
@@ -76,6 +79,19 @@ def run_generation_pipeline(req, *, allowed_topologies=None, excluded_topologies
             confidence = compute_confidence(1, r["torque_margin"] < 0.2, not r["motor"].get("vendor"))
             sim_sum = sim.run({"duty_cycle": normalized.functional_targets.duty_cycle, "torque_margin": r["torque_margin"], "achievable_speed": r["achievable_speed"], "required_speed": normalized.functional_targets.max_speed.value}) if sim else {"status": "skipped", "warning": "disabled"}
             cad_ref = cad.build({"components": {"motor": r["motor"]["id"], "drive": r["drive"]["id"], "transmission": r["transmission"]["id"]}}) if cad else {"status": "skipped", "warning": "disabled"}
+            physics_summary = physics.summary_payload()
+            cad_artifact_ref = {
+                "artifact_id": cad_ref.get("artifact_id"),
+                "artifact_uri": cad_ref.get("artifact_uri"),
+                "status": cad_ref.get("status"),
+            }
+            toolchain_results = toolchain.run(
+                normalized=normalized,
+                candidate=r,
+                simulation_summary=sim_sum,
+                cad_artifact_ref=cad_artifact_ref,
+                physics_summary=physics_summary,
+            ) if toolchain else {"status": "skipped", "warning": "disabled"}
             out.append(
                 Candidate(
                     id=r["id"],
@@ -95,12 +111,9 @@ def run_generation_pipeline(req, *, allowed_topologies=None, excluded_topologies
                     confidence=confidence,
                     feasible=True,
                     simulation_summary=sim_sum,
-                    cad_artifact_ref={
-                        "artifact_id": cad_ref.get("artifact_id"),
-                        "artifact_uri": cad_ref.get("artifact_uri"),
-                        "status": cad_ref.get("status"),
-                    },
-                    physics_summary=physics.summary_payload(),
+                    cad_artifact_ref=cad_artifact_ref,
+                    toolchain_results=toolchain_results,
+                    physics_summary=physics_summary,
                     physics_status=physics.status,
                     physics_passed=physics.passed,
                     physics_checks=[check.model_dump() for check in physics.checks],

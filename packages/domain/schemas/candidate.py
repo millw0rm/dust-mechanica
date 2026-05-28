@@ -42,6 +42,7 @@ class Robustness(BaseModel):
 class Candidate(BaseModel):
     simulation_summary: dict | None = None
     cad_artifact_ref: dict | None = None
+    toolchain_results: dict | None = None
     physics_summary: dict | None = None
     physics_status: str | None = None
     physics_passed: bool | None = None
