@@ -21,6 +21,9 @@ def process_one_job(repo: JobRepository):
         req = RequirementInput(**job["normalized_input"])
         repo.update(job_id, progress=0.5)
         result = run_generation_pipeline(req)
+        if repo.get(job_id).get("cancelled"):
+            repo.update(job_id, status=JobStatus.failed.value, progress=1.0, error="cancelled")
+            return True
         report = build_explainability_report(result)
         repo.update(job_id, status=JobStatus.awaiting_review.value, progress=1.0, result=result, report=report)
         logger.info(json.dumps({"event": "job_completed", "job_id": job_id, "trace_id": job["trace_id"], "request_id": job["request_id"]}))

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Header, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from packages.domain.repositories.jobs import JobRepository
 from packages.domain.schemas.requirements import RequirementInput
 from packages.domain.schemas.responses import CandidateGenerationResponse, JobDetailResponse
@@ -12,15 +12,21 @@ repo = JobRepository()
 class GenerateRequest(BaseModel):
     requirement: RequirementInput
     async_mode: bool = False
+    allowed_topologies: list[str] | None = None
+    excluded_topologies: list[str] | None = None
+    explain_topology_selection: bool = False
 
 
 @router.post('/candidates/generate')
-def generate(req: RequirementInput, async_mode: bool = False, x_request_id: str | None = Header(default=None), x_trace_id: str | None = Header(default=None)):
-    if async_mode:
+def generate(payload: GenerateRequest, x_request_id: str | None = Header(default=None), x_trace_id: str | None = Header(default=None), idempotency_key: str | None = Header(default=None)):
+    if payload.async_mode:
+        existing = repo.find_by_idempotency_key(idempotency_key or x_request_id or "")
+        if existing:
+            return {"schema_version": "2.0", "job_id": existing["id"], "status": existing["status"], "idempotent_replay": True}
         v = {"issues": [], "missing": [], "conflicts": []}
-        job_id = repo.create(req.model_dump(), v, x_trace_id or "", x_request_id or "")
+        job_id = repo.create(payload.requirement.model_dump(), v, x_trace_id or "", idempotency_key or x_request_id or "")
         return {"schema_version": "2.0", "job_id": job_id, "status": "queued"}
-    result = run_generation_pipeline(req)
+    result = run_generation_pipeline(payload.requirement, allowed_topologies=payload.allowed_topologies, excluded_topologies=payload.excluded_topologies, explain_topology_selection=payload.explain_topology_selection)
     return CandidateGenerationResponse(**result)
 
 
@@ -31,31 +37,3 @@ def job_status(id: str):
         raise HTTPException(status_code=404, detail="job not found")
     result = CandidateGenerationResponse(**job["result"]) if job.get("result") else None
     return JobDetailResponse(schema_version="2.0", id=id, status=job["status"], progress=job["progress"], created_at=job["created_at"], updated_at=job["updated_at"], completed_at=job["completed_at"], error=job["error"], result=result, review=job.get("review"), report=job.get("report"))
-
-
-@router.get('/jobs/{id}/report')
-def job_report(id: str):
-    job = repo.get(id)
-    if not job:
-        raise HTTPException(status_code=404, detail="job not found")
-    return {"job_id": id, "report": job.get("report"), "status": job["status"]}
-
-
-@router.post('/jobs/{id}/approve')
-def approve_job(id: str, note: str = "", reason: str = "approved"):
-    job = repo.get(id)
-    if not job:
-        raise HTTPException(status_code=404, detail="job not found")
-    review = {"decision":"approved","note":note,"reason":reason,"timestamp":__import__("datetime").datetime.utcnow().isoformat()}
-    repo.update(id, status="approved", review=review)
-    return {"job_id": id, "status": "approved", "review": review}
-
-
-@router.post('/jobs/{id}/reject')
-def reject_job(id: str, note: str = "", reason: str = "rejected"):
-    job = repo.get(id)
-    if not job:
-        raise HTTPException(status_code=404, detail="job not found")
-    review = {"decision":"rejected","note":note,"reason":reason,"timestamp":__import__("datetime").datetime.utcnow().isoformat()}
-    repo.update(id, status="rejected", review=review)
-    return {"job_id": id, "status": "rejected", "review": review}

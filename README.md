@@ -16,3 +16,7 @@ Then poll:
 ```bash
 curl http://localhost:8000/v1/jobs/<job_id>
 ```
+
+
+## Multi-topology quickstart
+Use `/v1/candidates/generate` request body with `allowed_topologies`, `excluded_topologies`, and `explain_topology_selection`.
