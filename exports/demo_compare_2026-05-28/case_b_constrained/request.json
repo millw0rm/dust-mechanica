@@ -1,0 +1,21 @@
+{
+  "functional_targets": {
+    "travel": {
+      "value": 800,
+      "unit": "mm"
+    },
+    "max_speed": {
+      "value": 600,
+      "unit": "mm/s"
+    },
+    "payload_mass": {
+      "value": 12,
+      "unit": "kg"
+    },
+    "duty_cycle": 0.7
+  },
+  "constraints": {
+    "max_motor_power_w": 500,
+    "max_total_mass_kg": 6
+  }
+}

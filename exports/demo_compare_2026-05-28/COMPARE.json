@@ -1,0 +1,26 @@
+{
+  "generated_at_utc": "2026-05-28T11:54:11.570102+00:00",
+  "case_a": {
+    "exported_at_utc": "2026-05-28T11:54:11.567071+00:00",
+    "topology": "belt-driven-linear-axis",
+    "candidate_count": 3,
+    "risk_flags": [],
+    "top_candidate_id": "direct_drive-ddm-50",
+    "top_candidate_total_score": 0.4942
+  },
+  "case_b": {
+    "exported_at_utc": "2026-05-28T11:54:11.569501+00:00",
+    "topology": "belt-driven-linear-axis",
+    "candidate_count": 3,
+    "risk_flags": [],
+    "top_candidate_id": "direct_drive-ddm-50",
+    "top_candidate_total_score": 0.4942
+  },
+  "diff": {
+    "topology_changed": false,
+    "top_candidate_changed": false,
+    "top_score_delta_case_b_minus_a": 0.0,
+    "risk_flags_added_in_b": [],
+    "risk_flags_removed_in_b": []
+  }
+}
