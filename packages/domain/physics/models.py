@@ -1,11 +1,13 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class PhysicsMargins(BaseModel):
-    speed_headroom_ratio: float
-    torque_margin: float
-    efficiency_margin: float
-    mass_budget_margin_kg: float
+    model_config = ConfigDict(extra="allow")
+
+    speed_headroom_ratio: float | None = None
+    torque_margin: float | None = None
+    efficiency_margin: float | None = None
+    mass_budget_margin_kg: float | None = None
 
 
 class PhysicsWarnings(BaseModel):
