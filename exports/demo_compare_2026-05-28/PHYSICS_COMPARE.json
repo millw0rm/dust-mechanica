@@ -574,7 +574,7 @@
       ]
     }
   },
-  "diff": {
+  "delta_summary": {
     "topology_changed": false,
     "top_candidate_changed": false,
     "top_score_delta_case_b_minus_a": 0.0,

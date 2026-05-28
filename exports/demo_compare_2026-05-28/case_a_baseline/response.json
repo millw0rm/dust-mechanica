@@ -52,10 +52,34 @@
         }
       },
       "cad_artifact_ref": {
-        "artifact_id": "cad-5dd71143-ba99-42e9-ac3b-308d02ae0407",
-        "artifact_uri": "artifact://cad/cad-5dd71143-ba99-42e9-ac3b-308d02ae0407",
-        "status": null
+        "artifact_id": null,
+        "artifact_uri": null,
+        "status": "skipped"
       },
+      "physics_summary": "pass",
+      "physics_passed": true,
+      "physics_margins": {
+        "speed_headroom_ratio": 4.0,
+        "torque_margin": 0.9792,
+        "efficiency_margin": 0.18,
+        "mass_budget_margin_kg": 9.9,
+        "direct_drive_speed_margin": 4.0,
+        "direct_drive_torque_margin": 0.9792,
+        "direct_drive_duty_weighted_margin": 2.0475,
+        "duty_weighted_load": 0.3537,
+        "estimated_losses_w": 0.15,
+        "estimated_temp_rise_c": 0.27,
+        "continuous_thermal_margin": 0.6463,
+        "intermittent_thermal_margin": 0.9963,
+        "thermal_margin": 0.6463,
+        "thermal_mode": "continuous",
+        "estimated_max_deflection_mm": 0.3207,
+        "estimated_stress_proxy_mpa": 23.7122,
+        "structural_deflection_margin": 0.3585,
+        "structural_stress_margin": 0.8024,
+        "structural_safety_factor_proxy": 5.0607
+      },
+      "physics_warnings": [],
       "id": "direct_drive-ddm-50",
       "components": {
         "motor_id": "ddm-50",
@@ -111,6 +135,12 @@
           "normalized_metric": 0.6277,
           "applied_weight": 0.35,
           "weighted_contribution": 0.2197
+        },
+        "physics_structural_margin": {
+          "raw_metric": 5.0607,
+          "normalized_metric": 1.0,
+          "applied_weight": 0.0,
+          "weighted_contribution": 0.0
         }
       },
       "risk_flags": [],
@@ -142,10 +172,41 @@
         }
       },
       "cad_artifact_ref": {
-        "artifact_id": "cad-f7569c9e-bc8b-4c77-af3d-116b0c0c42f8",
-        "artifact_uri": "artifact://cad/cad-f7569c9e-bc8b-4c77-af3d-116b0c0c42f8",
-        "status": null
+        "artifact_id": null,
+        "artifact_uri": null,
+        "status": "skipped"
       },
+      "physics_summary": "pass_with_warnings",
+      "physics_passed": true,
+      "physics_margins": {
+        "speed_headroom_ratio": 0.25,
+        "torque_margin": 0.2742,
+        "efficiency_margin": 0.086,
+        "mass_budget_margin_kg": 8.9,
+        "belt_stretch_margin": -1.943,
+        "belt_reflected_inertia_margin": 0.325,
+        "belt_required_speed_mps": 0.6,
+        "belt_duty_cycle": 0.7,
+        "duty_weighted_load": 0.5494,
+        "estimated_losses_w": 21.772,
+        "estimated_temp_rise_c": 39.1895,
+        "continuous_thermal_margin": 0.4506,
+        "intermittent_thermal_margin": 0.8006,
+        "thermal_margin": 0.4506,
+        "thermal_mode": "continuous",
+        "estimated_max_deflection_mm": 0.3435,
+        "estimated_stress_proxy_mpa": 25.3939,
+        "structural_deflection_margin": 0.313,
+        "structural_stress_margin": 0.7884,
+        "structural_safety_factor_proxy": 4.7255
+      },
+      "physics_warnings": [
+        {
+          "code": "risk_belt_stretch_margin_low",
+          "message": "Belt stretch margin below threshold",
+          "severity": "high"
+        }
+      ],
       "id": "belt_axis-M2-D2-T3",
       "components": {
         "motor_id": "M2",
@@ -201,9 +262,21 @@
           "normalized_metric": 0.5058,
           "applied_weight": 0.35,
           "weighted_contribution": 0.177
+        },
+        "physics_structural_margin": {
+          "raw_metric": 4.7255,
+          "normalized_metric": 1.0,
+          "applied_weight": 0.0,
+          "weighted_contribution": 0.0
         }
       },
-      "risk_flags": [],
+      "risk_flags": [
+        {
+          "code": "risk_belt_stretch_margin_low",
+          "message": "Belt stretch margin below threshold",
+          "severity": "high"
+        }
+      ],
       "confidence": {
         "value": 0.65,
         "rationale": "penalty=0.25; assumptions=1; low_margin=False; sparse_data=True"
@@ -232,10 +305,41 @@
         }
       },
       "cad_artifact_ref": {
-        "artifact_id": "cad-899cf2ad-3ce3-457d-93ff-b688bbf98327",
-        "artifact_uri": "artifact://cad/cad-899cf2ad-3ce3-457d-93ff-b688bbf98327",
-        "status": null
+        "artifact_id": null,
+        "artifact_uri": null,
+        "status": "skipped"
       },
+      "physics_summary": "pass_with_warnings",
+      "physics_passed": true,
+      "physics_margins": {
+        "speed_headroom_ratio": 0.25,
+        "torque_margin": 0.2742,
+        "efficiency_margin": 0.0948,
+        "mass_budget_margin_kg": 8.5,
+        "belt_stretch_margin": -1.943,
+        "belt_reflected_inertia_margin": 0.325,
+        "belt_required_speed_mps": 0.6,
+        "belt_duty_cycle": 0.7,
+        "duty_weighted_load": 0.5494,
+        "estimated_losses_w": 21.772,
+        "estimated_temp_rise_c": 39.1895,
+        "continuous_thermal_margin": 0.4506,
+        "intermittent_thermal_margin": 0.8006,
+        "thermal_margin": 0.4506,
+        "thermal_mode": "continuous",
+        "estimated_max_deflection_mm": 0.3526,
+        "estimated_stress_proxy_mpa": 26.0666,
+        "structural_deflection_margin": 0.2948,
+        "structural_stress_margin": 0.7828,
+        "structural_safety_factor_proxy": 4.6036
+      },
+      "physics_warnings": [
+        {
+          "code": "risk_belt_stretch_margin_low",
+          "message": "Belt stretch margin below threshold",
+          "severity": "high"
+        }
+      ],
       "id": "belt_axis-M2-D3-T3",
       "components": {
         "motor_id": "M2",
@@ -291,9 +395,21 @@
           "normalized_metric": 0.5006,
           "applied_weight": 0.35,
           "weighted_contribution": 0.1752
+        },
+        "physics_structural_margin": {
+          "raw_metric": 4.6036,
+          "normalized_metric": 1.0,
+          "applied_weight": 0.0,
+          "weighted_contribution": 0.0
         }
       },
-      "risk_flags": [],
+      "risk_flags": [
+        {
+          "code": "risk_belt_stretch_margin_low",
+          "message": "Belt stretch margin below threshold",
+          "severity": "high"
+        }
+      ],
       "confidence": {
         "value": 0.65,
         "rationale": "penalty=0.25; assumptions=1; low_margin=False; sparse_data=True"
@@ -329,7 +445,14 @@
     }
   },
   "policy_version": "v1",
-  "topology_selection_trace": {},
+  "topology_selection_trace": {
+    "selected": [
+      "belt-driven-linear-axis",
+      "ball-screw-linear-axis",
+      "direct-drive-rotary-axis"
+    ],
+    "rejected": {}
+  },
   "topology_candidate_stats": {
     "belt-driven-linear-axis": {
       "generated": 22,
@@ -347,5 +470,7 @@
       "rejected": 0
     }
   },
-  "warnings": []
+  "warnings": [
+    "cad adapter disabled"
+  ]
 }
