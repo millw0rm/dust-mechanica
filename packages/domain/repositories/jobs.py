@@ -36,6 +36,19 @@ class JobRepository:
             for add in [("review","text"),("report","text"),("idempotency_key","text"),("artifact_version","text"),("cancelled","integer default 0")]:
                 if add[0] not in cols:
                     c.execute(f"alter table jobs add column {add[0]} {add[1]}")
+            c.execute(
+                """create table if not exists feedback (
+                id integer primary key autoincrement,
+                job_id text not null,
+                rating integer,
+                achieved_motion integer,
+                achieved_force integer,
+                achieved_pressure integer,
+                notes text,
+                created_at text,
+                foreign key(job_id) references jobs(id)
+                )"""
+            )
 
     def create(self, normalized_input: dict, validation: dict, trace_id: str, request_id: str):
         job_id = str(uuid.uuid4())
@@ -89,3 +102,36 @@ class JobRepository:
         with self._conn() as c:
             row = c.execute("select id from jobs where idempotency_key=? order by created_at desc limit 1", (key,)).fetchone()
         return self.get(row[0]) if row else None
+
+    def add_feedback(self, job_id: str, payload: dict):
+        with self._lock, self._conn() as c:
+            c.execute(
+                "insert into feedback (job_id,rating,achieved_motion,achieved_force,achieved_pressure,notes,created_at) values (?,?,?,?,?,?,?)",
+                (
+                    job_id,
+                    payload.get("rating"),
+                    1 if payload.get("achieved_motion") else 0,
+                    1 if payload.get("achieved_force") else 0,
+                    1 if payload.get("achieved_pressure") else 0,
+                    payload.get("notes"),
+                    utcnow(),
+                ),
+            )
+
+    def feedback_summary(self):
+        with self._conn() as c:
+            row = c.execute(
+                """select count(*), avg(rating),
+                avg(achieved_motion), avg(achieved_force), avg(achieved_pressure)
+                from feedback"""
+            ).fetchone()
+        total, avg_rating, motion, force, pressure = row
+        return {
+            "total_feedback": total or 0,
+            "avg_rating": float(avg_rating or 0.0),
+            "success_rates": {
+                "motion": float(motion or 0.0),
+                "force": float(force or 0.0),
+                "pressure": float(pressure or 0.0),
+            },
+        }

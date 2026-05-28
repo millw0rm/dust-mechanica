@@ -20,3 +20,7 @@ curl http://localhost:8000/v1/jobs/<job_id>
 
 ## Multi-topology quickstart
 Use `/v1/candidates/generate` request body with `allowed_topologies`, `excluded_topologies`, and `explain_topology_selection`.
+
+## Week 6 pilot telemetry
+- Submit pilot outcome feedback: `POST /v1/jobs/{id}/feedback`
+- View aggregate telemetry: `GET /v1/telemetry/summary`

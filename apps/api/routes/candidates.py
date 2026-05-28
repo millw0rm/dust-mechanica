@@ -2,7 +2,7 @@ from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 from packages.domain.repositories.jobs import JobRepository
 from packages.domain.schemas.requirements import RequirementInput
-from packages.domain.schemas.responses import CandidateGenerationResponse, JobDetailResponse
+from packages.domain.schemas.responses import CandidateGenerationResponse, JobDetailResponse, FeedbackRequest
 from packages.domain.schemas.common import JobStatus
 from packages.domain.services.pipeline import run_generation_pipeline
 
@@ -85,3 +85,17 @@ def design_review_package(id: str):
         "approval_status": job.get("review", {}).get("status"),
         "reviewer_notes": job.get("review"),
     }
+
+
+@router.post('/jobs/{id}/feedback')
+def submit_feedback(id: str, payload: FeedbackRequest):
+    job = repo.get(id)
+    if not job:
+        raise HTTPException(404, "job not found")
+    repo.add_feedback(id, payload.model_dump())
+    return {"job_id": id, "recorded": True}
+
+
+@router.get('/telemetry/summary')
+def telemetry_summary():
+    return {"schema_version": "2.1", **repo.feedback_summary()}
