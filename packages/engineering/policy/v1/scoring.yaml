@@ -1,0 +1,9 @@
+version: "v1"
+risk_thresholds:
+  low_margin_high: 0.15
+  low_margin_medium: 0.2
+  speed_headroom_factor: 1.05
+  min_efficiency: 0.85
+weight_perturbation:
+  bound: 0.08
+  samples: 25

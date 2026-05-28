@@ -30,6 +30,11 @@ class ScoreBreakdown(BaseModel):
     performance_margin: ScoreDimension
 
 
+class Robustness(BaseModel):
+    level: str
+    volatility_index: float
+
+
 class Candidate(BaseModel):
     id: str
     components: Components
@@ -38,3 +43,4 @@ class Candidate(BaseModel):
     risk_flags: list[RiskFlag] = Field(default_factory=list)
     confidence: Confidence = Field(default_factory=Confidence)
     feasible: bool = True
+    robustness: Robustness | None = None

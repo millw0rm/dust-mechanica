@@ -5,6 +5,7 @@ from packages.domain.repositories.jobs import JobRepository
 from packages.domain.schemas.common import JobStatus
 from packages.domain.services.pipeline import run_generation_pipeline
 from packages.domain.schemas.requirements import RequirementInput
+from packages.reporting.explain import build_explainability_report
 
 logger = logging.getLogger("dust.worker")
 
@@ -20,7 +21,8 @@ def process_one_job(repo: JobRepository):
         req = RequirementInput(**job["normalized_input"])
         repo.update(job_id, progress=0.5)
         result = run_generation_pipeline(req)
-        repo.update(job_id, status=JobStatus.completed.value, progress=1.0, result=result)
+        report = build_explainability_report(result)
+        repo.update(job_id, status=JobStatus.awaiting_review.value, progress=1.0, result=result, report=report)
         logger.info(json.dumps({"event": "job_completed", "job_id": job_id, "trace_id": job["trace_id"], "request_id": job["request_id"]}))
     except Exception as exc:
         repo.update(job_id, status=JobStatus.failed.value, progress=1.0, error=str(exc))

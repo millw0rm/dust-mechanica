@@ -1,0 +1,596 @@
+[
+  {
+    "id": "BM-001",
+    "kind": "edge",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 950,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 3,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 265,
+        "max_total_mass_kg": 8
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "SPEED_HEADROOM_LOW"
+      ]
+    }
+  },
+  {
+    "id": "BM-002",
+    "kind": "conflict",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1000,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 4,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 280,
+        "max_total_mass_kg": 8
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "SPEED_HEADROOM_LOW"
+      ]
+    }
+  },
+  {
+    "id": "BM-003",
+    "kind": "nominal",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1050,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 5,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 295,
+        "max_total_mass_kg": 8
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "SPEED_HEADROOM_LOW"
+      ]
+    }
+  },
+  {
+    "id": "BM-004",
+    "kind": "edge",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1100,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 6,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 310,
+        "max_total_mass_kg": 8
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "LOW_MARGIN"
+      ]
+    }
+  },
+  {
+    "id": "BM-005",
+    "kind": "conflict",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1150,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 7,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 325,
+        "max_total_mass_kg": 4
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "SPEED_HEADROOM_LOW"
+      ]
+    }
+  },
+  {
+    "id": "BM-006",
+    "kind": "nominal",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1200,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 2,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 340,
+        "max_total_mass_kg": 8
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "SPEED_HEADROOM_LOW"
+      ]
+    }
+  },
+  {
+    "id": "BM-007",
+    "kind": "edge",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1250,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 3,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 355,
+        "max_total_mass_kg": 8
+      }
+    },
+    "expected": {
+      "feasible": false,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "SPEED_HEADROOM_LOW"
+      ]
+    }
+  },
+  {
+    "id": "BM-008",
+    "kind": "conflict",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1300,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 4,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 370,
+        "max_total_mass_kg": 8
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "LOW_MARGIN"
+      ]
+    }
+  },
+  {
+    "id": "BM-009",
+    "kind": "nominal",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1350,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 5,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 385,
+        "max_total_mass_kg": 8
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "SPEED_HEADROOM_LOW"
+      ]
+    }
+  },
+  {
+    "id": "BM-010",
+    "kind": "edge",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1400,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 6,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 400,
+        "max_total_mass_kg": 4
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "SPEED_HEADROOM_LOW"
+      ]
+    }
+  },
+  {
+    "id": "BM-011",
+    "kind": "conflict",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1450,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 7,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 415,
+        "max_total_mass_kg": 8
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "SPEED_HEADROOM_LOW"
+      ]
+    }
+  },
+  {
+    "id": "BM-012",
+    "kind": "nominal",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1500,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 2,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 430,
+        "max_total_mass_kg": 8
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "LOW_MARGIN"
+      ]
+    }
+  },
+  {
+    "id": "BM-013",
+    "kind": "edge",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1550,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 3,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 445,
+        "max_total_mass_kg": 8
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "SPEED_HEADROOM_LOW"
+      ]
+    }
+  },
+  {
+    "id": "BM-014",
+    "kind": "conflict",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1600,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 4,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 460,
+        "max_total_mass_kg": 8
+      }
+    },
+    "expected": {
+      "feasible": false,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "SPEED_HEADROOM_LOW"
+      ]
+    }
+  },
+  {
+    "id": "BM-015",
+    "kind": "nominal",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1650,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 5,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 475,
+        "max_total_mass_kg": 4
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "SPEED_HEADROOM_LOW"
+      ]
+    }
+  },
+  {
+    "id": "BM-016",
+    "kind": "edge",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1700,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 6,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 490,
+        "max_total_mass_kg": 8
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "LOW_MARGIN"
+      ]
+    }
+  },
+  {
+    "id": "BM-017",
+    "kind": "conflict",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1750,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 7,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 505,
+        "max_total_mass_kg": 8
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "SPEED_HEADROOM_LOW"
+      ]
+    }
+  },
+  {
+    "id": "BM-018",
+    "kind": "nominal",
+    "requirement": {
+      "topology": "belt-driven-linear-axis",
+      "functional_targets": {
+        "travel": {
+          "value": 800,
+          "unit": "mm"
+        },
+        "max_speed": {
+          "value": 1800,
+          "unit": "mm/s"
+        },
+        "payload_mass": {
+          "value": 2,
+          "unit": "kg"
+        },
+        "duty_cycle": 0.7
+      },
+      "constraints": {
+        "max_motor_power_w": 520,
+        "max_total_mass_kg": 8
+      }
+    },
+    "expected": {
+      "feasible": true,
+      "topology_family": "belt-driven-linear-axis",
+      "risk_classes": [
+        "SPEED_HEADROOM_LOW"
+      ]
+    }
+  }
+]
