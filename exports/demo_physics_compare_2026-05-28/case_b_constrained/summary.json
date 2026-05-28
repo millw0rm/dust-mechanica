@@ -1,0 +1,377 @@
+{
+  "exported_at_utc": "2026-05-28T14:28:03.819236+00:00",
+  "case_key": "case_b_constrained",
+  "label": "Case B (constrained)",
+  "description": "500 W max motor power, 6 kg max total mass",
+  "topology": "belt-driven-linear-axis",
+  "candidate_count": 3,
+  "risk_flags": [
+    "risk_belt_stretch_margin_low",
+    "risk_thermal_margin_low"
+  ],
+  "top_candidate_id": "direct_drive-ddm-50",
+  "top_candidate_total_score": 0.4942,
+  "physics_pass_count": 1,
+  "physics_warning_count": 4,
+  "safest_candidate_id": "direct_drive-ddm-50",
+  "safest_candidate_category_margins": {
+    "structural_margin": 0.3585,
+    "drivetrain_margin": 0.18,
+    "thermal_margin": 0.3725,
+    "controls_tracking_margin": 0.3
+  },
+  "per_candidate_physics_margins": [
+    {
+      "id": "direct_drive-ddm-50",
+      "score": 0.4942,
+      "physics_summary": "pass",
+      "physics_passed": true,
+      "margins": {
+        "speed_headroom_ratio": 4.0,
+        "torque_margin": 0.9792,
+        "efficiency_margin": 0.18,
+        "mass_budget_margin_kg": 9.9,
+        "direct_drive_speed_margin": 4.0,
+        "direct_drive_torque_margin": 0.9792,
+        "direct_drive_duty_weighted_margin": 2.0475,
+        "duty_weighted_load": 0.6275,
+        "torque_demand_nm": 2.4,
+        "rms_torque_nm": 2.008,
+        "continuous_torque_nm": 3.2,
+        "intermittent_torque_nm": 5.0,
+        "mechanical_output_w": 9.0478,
+        "motor_loss_w": 9.2938,
+        "drive_loss_w": 3.0838,
+        "estimated_losses_w": 12.3775,
+        "motor_temp_rise_c": 8.8291,
+        "drive_temp_rise_c": 3.3921,
+        "estimated_temp_rise_c": 8.8291,
+        "allowable_temp_rise_c": 65.0,
+        "continuous_thermal_margin": 0.3725,
+        "intermittent_thermal_margin": 0.52,
+        "temperature_rise_margin": 0.8642,
+        "drive_power_margin": 0.9676,
+        "thermal_margin": 0.3725,
+        "thermal_mode": "continuous",
+        "effective_structural_load_n": 165.9852,
+        "estimated_max_deflection_mm": 0.3207,
+        "estimated_stress_proxy_mpa": 23.7122,
+        "structural_deflection_margin": 0.3585,
+        "structural_stress_margin": 0.8024,
+        "structural_margin": 0.3585,
+        "structural_safety_factor_proxy": 5.0607,
+        "controls_motion_profile_margin": 0.8,
+        "controls_torque_speed_margin": 0.8,
+        "controls_duty_margin": 0.3
+      },
+      "warnings": [],
+      "simulation_checks": {
+        "motion_profile_feasible": true,
+        "torque_speed_margin_valid": true,
+        "thermal_load_sanity": true
+      }
+    },
+    {
+      "id": "belt_axis-M2-D2-T3",
+      "score": 0.4825,
+      "physics_summary": "fail",
+      "physics_passed": false,
+      "margins": {
+        "speed_headroom_ratio": 0.25,
+        "torque_margin": 0.2742,
+        "efficiency_margin": 0.086,
+        "mass_budget_margin_kg": 8.9,
+        "belt_stretch_margin": -1.943,
+        "belt_reflected_inertia_margin": 0.325,
+        "belt_required_speed_mps": 0.6,
+        "belt_duty_cycle": 0.7,
+        "duty_weighted_load": 1.026,
+        "torque_demand_nm": 0.5886,
+        "rms_torque_nm": 0.4925,
+        "continuous_torque_nm": 0.48,
+        "intermittent_torque_nm": 0.75,
+        "mechanical_output_w": 147.9313,
+        "motor_loss_w": 30.9823,
+        "drive_loss_w": 9.3193,
+        "estimated_losses_w": 40.3015,
+        "motor_temp_rise_c": 16.1108,
+        "drive_temp_rise_c": 12.581,
+        "estimated_temp_rise_c": 16.1108,
+        "allowable_temp_rise_c": 60.0,
+        "continuous_thermal_margin": -0.026,
+        "intermittent_thermal_margin": 0.2152,
+        "temperature_rise_margin": 0.7315,
+        "drive_power_margin": 0.4102,
+        "thermal_margin": -0.026,
+        "thermal_mode": "continuous",
+        "effective_structural_load_n": 177.7572,
+        "estimated_max_deflection_mm": 0.3435,
+        "estimated_stress_proxy_mpa": 25.3939,
+        "structural_deflection_margin": 0.313,
+        "structural_stress_margin": 0.7884,
+        "structural_margin": 0.313,
+        "structural_safety_factor_proxy": 4.7255,
+        "controls_motion_profile_margin": 0.2,
+        "controls_torque_speed_margin": 0.2,
+        "controls_duty_margin": 0.3
+      },
+      "warnings": [
+        {
+          "code": "risk_belt_stretch_margin_low",
+          "message": "Belt stretch margin below threshold",
+          "severity": "high"
+        },
+        {
+          "code": "risk_thermal_margin_low",
+          "message": "Thermal margin below 0.1",
+          "severity": "high"
+        }
+      ],
+      "simulation_checks": {
+        "motion_profile_feasible": true,
+        "torque_speed_margin_valid": true,
+        "thermal_load_sanity": true
+      }
+    },
+    {
+      "id": "belt_axis-M2-D3-T3",
+      "score": 0.4704,
+      "physics_summary": "fail",
+      "physics_passed": false,
+      "margins": {
+        "speed_headroom_ratio": 0.25,
+        "torque_margin": 0.2742,
+        "efficiency_margin": 0.0948,
+        "mass_budget_margin_kg": 8.5,
+        "belt_stretch_margin": -1.943,
+        "belt_reflected_inertia_margin": 0.325,
+        "belt_required_speed_mps": 0.6,
+        "belt_duty_cycle": 0.7,
+        "duty_weighted_load": 1.026,
+        "torque_demand_nm": 0.5886,
+        "rms_torque_nm": 0.4925,
+        "continuous_torque_nm": 0.48,
+        "intermittent_torque_nm": 0.75,
+        "mechanical_output_w": 147.9313,
+        "motor_loss_w": 30.9823,
+        "drive_loss_w": 9.3073,
+        "estimated_losses_w": 40.2896,
+        "motor_temp_rise_c": 16.1108,
+        "drive_temp_rise_c": 9.7727,
+        "estimated_temp_rise_c": 16.1108,
+        "allowable_temp_rise_c": 60.0,
+        "continuous_thermal_margin": -0.026,
+        "intermittent_thermal_margin": 0.2152,
+        "temperature_rise_margin": 0.7315,
+        "drive_power_margin": 0.7811,
+        "thermal_margin": -0.026,
+        "thermal_mode": "continuous",
+        "effective_structural_load_n": 182.466,
+        "estimated_max_deflection_mm": 0.3526,
+        "estimated_stress_proxy_mpa": 26.0666,
+        "structural_deflection_margin": 0.2948,
+        "structural_stress_margin": 0.7828,
+        "structural_margin": 0.2948,
+        "structural_safety_factor_proxy": 4.6036,
+        "controls_motion_profile_margin": 0.2,
+        "controls_torque_speed_margin": 0.2,
+        "controls_duty_margin": 0.3
+      },
+      "warnings": [
+        {
+          "code": "risk_belt_stretch_margin_low",
+          "message": "Belt stretch margin below threshold",
+          "severity": "high"
+        },
+        {
+          "code": "risk_thermal_margin_low",
+          "message": "Thermal margin below 0.1",
+          "severity": "high"
+        }
+      ],
+      "simulation_checks": {
+        "motion_profile_feasible": true,
+        "torque_speed_margin_valid": true,
+        "thermal_load_sanity": true
+      }
+    }
+  ],
+  "pass_fail_by_check_type": {
+    "structural": [
+      {
+        "candidate_id": "direct_drive-ddm-50",
+        "status": "pass",
+        "margins": {
+          "estimated_max_deflection_mm": 0.3207,
+          "structural_deflection_margin": 0.3585,
+          "estimated_stress_proxy_mpa": 23.7122,
+          "structural_stress_margin": 0.8024,
+          "structural_safety_factor_proxy": 5.0607
+        },
+        "warnings": []
+      },
+      {
+        "candidate_id": "belt_axis-M2-D2-T3",
+        "status": "pass",
+        "margins": {
+          "estimated_max_deflection_mm": 0.3435,
+          "structural_deflection_margin": 0.313,
+          "estimated_stress_proxy_mpa": 25.3939,
+          "structural_stress_margin": 0.7884,
+          "structural_safety_factor_proxy": 4.7255
+        },
+        "warnings": []
+      },
+      {
+        "candidate_id": "belt_axis-M2-D3-T3",
+        "status": "pass",
+        "margins": {
+          "estimated_max_deflection_mm": 0.3526,
+          "structural_deflection_margin": 0.2948,
+          "estimated_stress_proxy_mpa": 26.0666,
+          "structural_stress_margin": 0.7828,
+          "structural_safety_factor_proxy": 4.6036
+        },
+        "warnings": []
+      }
+    ],
+    "thermal": [
+      {
+        "candidate_id": "direct_drive-ddm-50",
+        "status": "pass",
+        "margins": {
+          "estimated_temp_rise_c": 8.8291,
+          "thermal_margin": 0.3725,
+          "duty_weighted_load": 0.6275
+        },
+        "warnings": []
+      },
+      {
+        "candidate_id": "belt_axis-M2-D2-T3",
+        "status": "fail",
+        "margins": {
+          "estimated_temp_rise_c": 16.1108,
+          "thermal_margin": -0.026,
+          "duty_weighted_load": 1.026
+        },
+        "warnings": [
+          {
+            "code": "risk_thermal_margin_low",
+            "message": "Thermal margin below 0.1",
+            "severity": "high"
+          }
+        ]
+      },
+      {
+        "candidate_id": "belt_axis-M2-D3-T3",
+        "status": "fail",
+        "margins": {
+          "estimated_temp_rise_c": 16.1108,
+          "thermal_margin": -0.026,
+          "duty_weighted_load": 1.026
+        },
+        "warnings": [
+          {
+            "code": "risk_thermal_margin_low",
+            "message": "Thermal margin below 0.1",
+            "severity": "high"
+          }
+        ]
+      }
+    ],
+    "drivetrain": [
+      {
+        "candidate_id": "direct_drive-ddm-50",
+        "status": "pass",
+        "margins": {
+          "speed_headroom_ratio": 4.0,
+          "torque_margin": 0.9792,
+          "efficiency_margin": 0.18,
+          "direct_drive_speed_margin": 4.0,
+          "direct_drive_torque_margin": 0.9792,
+          "direct_drive_duty_weighted_margin": 2.0475
+        },
+        "warnings": []
+      },
+      {
+        "candidate_id": "belt_axis-M2-D2-T3",
+        "status": "fail",
+        "margins": {
+          "speed_headroom_ratio": 0.25,
+          "torque_margin": 0.2742,
+          "efficiency_margin": 0.086,
+          "belt_stretch_margin": -1.943,
+          "belt_reflected_inertia_margin": 0.325,
+          "belt_required_speed_mps": 0.6
+        },
+        "warnings": [
+          {
+            "code": "risk_belt_stretch_margin_low",
+            "message": "Belt stretch margin below threshold",
+            "severity": "high"
+          }
+        ]
+      },
+      {
+        "candidate_id": "belt_axis-M2-D3-T3",
+        "status": "fail",
+        "margins": {
+          "speed_headroom_ratio": 0.25,
+          "torque_margin": 0.2742,
+          "efficiency_margin": 0.0948,
+          "belt_stretch_margin": -1.943,
+          "belt_reflected_inertia_margin": 0.325,
+          "belt_required_speed_mps": 0.6
+        },
+        "warnings": [
+          {
+            "code": "risk_belt_stretch_margin_low",
+            "message": "Belt stretch margin below threshold",
+            "severity": "high"
+          }
+        ]
+      }
+    ],
+    "controls": [
+      {
+        "candidate_id": "direct_drive-ddm-50",
+        "status": "pass",
+        "margins": {
+          "controls_motion_profile_margin": 0.8,
+          "controls_torque_speed_margin": 0.8,
+          "controls_duty_margin": 0.3,
+          "speed_headroom_ratio": 4.0,
+          "torque_margin": 0.9792,
+          "duty_weighted_load": 0.6275
+        },
+        "warnings": []
+      },
+      {
+        "candidate_id": "belt_axis-M2-D2-T3",
+        "status": "pass",
+        "margins": {
+          "controls_motion_profile_margin": 0.2,
+          "controls_torque_speed_margin": 0.2,
+          "controls_duty_margin": 0.3,
+          "speed_headroom_ratio": 0.25,
+          "torque_margin": 0.2742,
+          "duty_weighted_load": 1.026
+        },
+        "warnings": []
+      },
+      {
+        "candidate_id": "belt_axis-M2-D3-T3",
+        "status": "pass",
+        "margins": {
+          "controls_motion_profile_margin": 0.2,
+          "controls_torque_speed_margin": 0.2,
+          "controls_duty_margin": 0.3,
+          "speed_headroom_ratio": 0.25,
+          "torque_margin": 0.2742,
+          "duty_weighted_load": 1.026
+        },
+        "warnings": []
+      }
+    ]
+  }
+}

@@ -93,15 +93,51 @@ CHECK_TYPES = {
         ),
     },
     "controls": {
-        "margin_keys": ["speed_headroom_ratio", "torque_margin", "duty_weighted_load"],
+        "margin_keys": [
+            "controls_motion_profile_margin",
+            "controls_torque_speed_margin",
+            "controls_duty_margin",
+            "speed_headroom_ratio",
+            "torque_margin",
+            "duty_weighted_load",
+        ],
         "warning_prefixes": ("PHYS_CONTROL",),
         "simulation_checks": ["motion_profile_feasible", "torque_speed_margin_valid", "thermal_load_sanity"],
     },
 }
 
+CATEGORY_MARGIN_KEYS = {
+    "structural_margin": ["structural_margin", "structural_deflection_margin", "structural_stress_margin"],
+    "drivetrain_margin": [
+        "speed_headroom_ratio",
+        "torque_margin",
+        "efficiency_margin",
+        "belt_stretch_margin",
+        "belt_reflected_inertia_margin",
+        "ball_screw_critical_speed_margin",
+        "ball_screw_buckling_margin",
+        "ball_screw_efficiency_margin",
+        "direct_drive_speed_margin",
+        "direct_drive_torque_margin",
+        "direct_drive_duty_weighted_margin",
+    ],
+    "thermal_margin": ["thermal_margin", "continuous_thermal_margin", "intermittent_thermal_margin"],
+    "controls_tracking_margin": [
+        "controls_motion_profile_margin",
+        "controls_torque_speed_margin",
+        "controls_duty_margin",
+    ],
+}
+
 
 def _write_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=False) + "\n")
+
+
+def _physics_summary_label(summary: Any) -> str:
+    if isinstance(summary, dict):
+        return str(summary.get("status") or summary.get("summary") or "unknown")
+    return str(summary)
 
 
 def _candidate_rows(response: dict[str, Any]) -> list[dict[str, Any]]:
@@ -112,7 +148,7 @@ def _candidate_rows(response: dict[str, Any]) -> list[dict[str, Any]]:
             {
                 "id": candidate["id"],
                 "score": candidate["score_breakdown"]["total"],
-                "physics_summary": candidate.get("physics_summary"),
+                "physics_summary": _physics_summary_label(candidate.get("physics_summary")),
                 "physics_passed": candidate.get("physics_passed"),
                 "margins": margins,
                 "warnings": candidate.get("physics_warnings") or [],
@@ -160,11 +196,74 @@ def _pass_fail_tables(rows: list[dict[str, Any]]) -> dict[str, list[dict[str, An
     return tables
 
 
+def _category_margin(margins: dict[str, Any], category: str) -> float | None:
+    """Return one conservative margin for a physics category.
+
+    Each exported candidate still carries all raw physics margins.  The category
+    value is the minimum available numeric margin in that category so cross-case
+    deltas answer the safety question directly: positive means the constrained
+    case gained margin, negative means it lost margin.
+    """
+
+    values = [float(margins[key]) for key in CATEGORY_MARGIN_KEYS[category] if isinstance(margins.get(key), (int, float))]
+    return round(min(values), 6) if values else None
+
+
+def _category_margins(margins: dict[str, Any]) -> dict[str, float | None]:
+    return {category: _category_margin(margins, category) for category in CATEGORY_MARGIN_KEYS}
+
+
+def _safety_rank(candidate: dict[str, Any]) -> tuple[int, int, float, float, float, float, float]:
+    category_margins = _category_margins(candidate.get("margins") or {})
+    finite_margins = [value for value in category_margins.values() if isinstance(value, (int, float))]
+    worst_margin = min(finite_margins) if finite_margins else -999.0
+    drivetrain_margin = category_margins.get("drivetrain_margin")
+    thermal_margin = category_margins.get("thermal_margin")
+    structural_margin = category_margins.get("structural_margin")
+    controls_margin = category_margins.get("controls_tracking_margin")
+    return (
+        1 if candidate.get("physics_passed") else 0,
+        -len(candidate.get("warnings") or []),
+        float(worst_margin),
+        float(drivetrain_margin if drivetrain_margin is not None else -999.0),
+        float(thermal_margin if thermal_margin is not None else -999.0),
+        float(structural_margin if structural_margin is not None else -999.0),
+        float(controls_margin if controls_margin is not None else -999.0),
+    )
+
+
+def _safest_candidate(rows: list[dict[str, Any]]) -> dict[str, Any] | None:
+    return max(rows, key=_safety_rank) if rows else None
+
+
+def _format_category_margins_for_sentence(margins: dict[str, float | None]) -> str:
+    labels = {
+        "structural_margin": "structural",
+        "drivetrain_margin": "drivetrain",
+        "thermal_margin": "thermal",
+        "controls_tracking_margin": "controls/tracking",
+    }
+    parts = []
+    for key, label in labels.items():
+        value = margins.get(key)
+        parts.append(f"{label}={value}" if value is not None else f"{label}=n/a")
+    return ", ".join(parts)
+
+
+def _safest_sentence(case: dict[str, Any]) -> str:
+    return (
+        f"`{case['safest_candidate_id']}` is safest for {case['label']} because it ranks highest after physics pass status, "
+        f"warning count, and worst category margin; conservative category margins are "
+        f"{_format_category_margins_for_sentence(case['safest_candidate_category_margins'])}."
+    )
+
+
 def _summarize_case(case_key: str, case: dict[str, Any], response: dict[str, Any], exported_at: str) -> dict[str, Any]:
     candidates = response["candidates"]
     top = candidates[0] if candidates else {}
     risk_flags = sorted({flag["code"] for candidate in candidates for flag in candidate.get("risk_flags", [])})
     rows = _candidate_rows(response)
+    safest = _safest_candidate(rows)
     return {
         "exported_at_utc": exported_at,
         "case_key": case_key,
@@ -177,6 +276,8 @@ def _summarize_case(case_key: str, case: dict[str, Any], response: dict[str, Any
         "top_candidate_total_score": top.get("score_breakdown", {}).get("total"),
         "physics_pass_count": sum(1 for c in rows if c["physics_passed"]),
         "physics_warning_count": sum(len(c["warnings"]) for c in rows),
+        "safest_candidate_id": safest["id"] if safest else None,
+        "safest_candidate_category_margins": _category_margins(safest.get("margins") or {}) if safest else {},
         "per_candidate_physics_margins": rows,
         "pass_fail_by_check_type": _pass_fail_tables(rows),
     }
@@ -195,12 +296,22 @@ def _delta_summary(case_a: dict[str, Any], case_b: dict[str, Any]) -> dict[str, 
         for key in margin_keys:
             if isinstance(a["margins"].get(key), (int, float)) and isinstance(b["margins"].get(key), (int, float)):
                 margin_deltas[key] = round(float(b["margins"][key]) - float(a["margins"][key]), 6)
+        a_category_margins = _category_margins(a["margins"])
+        b_category_margins = _category_margins(b["margins"])
+        category_margin_deltas = {}
+        for category, a_value in a_category_margins.items():
+            b_value = b_category_margins.get(category)
+            if isinstance(a_value, (int, float)) and isinstance(b_value, (int, float)):
+                category_margin_deltas[f"{category}_delta_case_b_minus_a"] = round(float(b_value) - float(a_value), 6)
         per_candidate.append(
             {
                 "candidate_id": candidate_id,
                 "score_delta_case_b_minus_a": round(float(b["score"]) - float(a["score"]), 6),
                 "physics_summary_changed": a["physics_summary"] != b["physics_summary"],
                 "physics_passed_changed": a["physics_passed"] != b["physics_passed"],
+                "category_margins_case_a": a_category_margins,
+                "category_margins_case_b": b_category_margins,
+                "category_margin_deltas_case_b_minus_a": category_margin_deltas,
                 "margin_deltas_case_b_minus_a": margin_deltas,
             }
         )
@@ -212,6 +323,8 @@ def _delta_summary(case_a: dict[str, Any], case_b: dict[str, Any]) -> dict[str, 
         "physics_warning_count_delta_case_b_minus_a": case_b["physics_warning_count"] - case_a["physics_warning_count"],
         "risk_flags_added_in_b": sorted(set(case_b["risk_flags"]) - set(case_a["risk_flags"])),
         "risk_flags_removed_in_b": sorted(set(case_a["risk_flags"]) - set(case_b["risk_flags"])),
+        "safest_candidate_case_a": case_a.get("safest_candidate_id"),
+        "safest_candidate_case_b": case_b.get("safest_candidate_id"),
         "per_candidate": per_candidate,
     }
 
@@ -229,10 +342,20 @@ def _format_margins(margins: dict[str, Any], keys: list[str]) -> str:
 
 
 def _build_physics_markdown(compare: dict[str, Any]) -> str:
+    delta = compare["delta_summary"]
     lines = [
         "# Physics comparison",
         "",
         f"Generated: {compare['generated_at_utc']}",
+        "",
+        "## Safest candidate summary",
+        "",
+        f"- Case A safest candidate: `{delta['safest_candidate_case_a']}`",
+        f"- Case B safest candidate: `{delta['safest_candidate_case_b']}`",
+        "- Safety ranking prioritizes physics pass status, then fewer physics warnings, then the worst conservative category margin.",
+        f"- {_safest_sentence(compare['case_a'])}",
+        f"- {_safest_sentence(compare['case_b'])}",
+        "- Belt-axis candidates are less safe in this run because their drivetrain and thermal checks carry high-severity risk flags, while the direct-drive candidate passes all four check groups.",
         "",
         "## Per-candidate physics margins",
     ]
@@ -261,7 +384,6 @@ def _build_physics_markdown(compare: dict[str, Any]) -> str:
                 rows.append([row["candidate_id"], row["status"], _format_margins(row["margins"], list(row["margins"].keys())), warning_codes])
             lines.extend(["", f"### {case['label']}", _markdown_table(["Candidate", "Status", "Margins", "Warnings"], rows)])
 
-    delta = compare["delta_summary"]
     lines.extend(
         [
             "",
@@ -282,6 +404,20 @@ def _build_physics_markdown(compare: dict[str, Any]) -> str:
         for item in delta["per_candidate"]
     ]
     lines.append(_markdown_table(["Candidate", "Score delta", "Summary changed", "Pass changed"], rows))
+    lines.extend(["", "## Category margin deltas (Case B - Case A)", ""])
+    rows = []
+    for item in delta["per_candidate"]:
+        category_deltas = item["category_margin_deltas_case_b_minus_a"]
+        rows.append(
+            [
+                item["candidate_id"],
+                category_deltas.get("structural_margin_delta_case_b_minus_a", "—"),
+                category_deltas.get("drivetrain_margin_delta_case_b_minus_a", "—"),
+                category_deltas.get("thermal_margin_delta_case_b_minus_a", "—"),
+                category_deltas.get("controls_tracking_margin_delta_case_b_minus_a", "—"),
+            ]
+        )
+    lines.append(_markdown_table(["Candidate", "Structural", "Drivetrain", "Thermal", "Controls/tracking"], rows))
     return "\n".join(lines) + "\n"
 
 
