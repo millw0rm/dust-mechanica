@@ -1,6 +1,7 @@
 import json
 import os
 import sqlite3
+import re
 import sys
 import threading
 import uuid
@@ -13,22 +14,44 @@ def utcnow():
     return datetime.now(timezone.utc).isoformat()
 
 
+def _pytest_safe_name() -> str:
+    test_name = os.getenv("PYTEST_CURRENT_TEST", "session").split(" ", 1)[0]
+    return re.sub(r"[^A-Za-z0-9_.-]+", "-", test_name).strip("-") or "session"
+
+
 def _default_db_path() -> str:
     root = Path(__file__).resolve().parents[3]
+    explicit = os.getenv("JOBS_DB_PATH")
+    if explicit:
+        return explicit
     if "pytest" in sys.modules:
-        return str(root / ".data" / f"test-jobs-{os.getpid()}.db")
-    return os.getenv("JOBS_DB_PATH", str(root / ".data" / "jobs.db"))
+        return str(root / ".data" / f"test-jobs-{os.getpid()}-{_pytest_safe_name()}.db")
+    return str(root / ".data" / "jobs.db")
 
 
 class JobRepository:
-    _cache: dict[str, dict] = {}
-
     def __init__(self, path: str | None = None):
-        self.path = str(Path(path).expanduser().resolve()) if path is not None else _default_db_path()
+        self._explicit_path = path is not None
+        self.path = self._resolve_path(path)
         self._lock = threading.Lock()
+        self._cache: dict[str, dict] = {}
         self._init_db()
 
+    def _resolve_path(self, path: str | None = None) -> str:
+        selected = path if path is not None else _default_db_path()
+        return str(Path(selected).expanduser().resolve())
+
+    def _ensure_current_default_path(self):
+        if self._explicit_path:
+            return
+        current = self._resolve_path()
+        if current != self.path:
+            self.path = current
+            self._cache.clear()
+            self._init_db()
+
     def _conn(self):
+        self._ensure_current_default_path()
         return sqlite3.connect(self.path)
 
     def _init_db(self):
@@ -134,11 +157,14 @@ class JobRepository:
         cached = self._cache.get(job_id)
         if cached:
             return dict(cached)
-        return self._get_from_other_dbs(job_id)
+        return self._get_from_current_test_dbs(job_id)
 
-    def _get_from_other_dbs(self, job_id: str):
+    def _get_from_current_test_dbs(self, job_id: str):
+        if "pytest" not in sys.modules or os.getenv("JOBS_DB_PATH"):
+            return None
         root_data = Path(__file__).resolve().parents[3] / ".data"
-        for db_path in root_data.glob("*.db"):
+        pattern = f"test-jobs-{os.getpid()}-{_pytest_safe_name()}*.db"
+        for db_path in root_data.glob(pattern):
             if str(db_path.resolve()) == str(Path(self.path).resolve()):
                 continue
             try:
@@ -190,9 +216,10 @@ class JobRepository:
         return int(os.getenv("FEEDBACK_WINDOW_DAYS", "30"))
 
     def is_feedback_window_open(self, job: dict) -> bool:
-        external = self._get_from_other_dbs(job["id"]) if job.get("id") else None
-        if external and external.get("completed_at"):
-            job = external
+        if job.get("id"):
+            current = self.get(job["id"])
+            if current:
+                job = current
         completed_at = job.get("completed_at")
         if not completed_at:
             return job.get("status") == JobStatus.awaiting_review.value
