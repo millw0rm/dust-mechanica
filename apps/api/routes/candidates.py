@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Header, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from packages.domain.repositories.jobs import JobRepository
 from packages.domain.schemas.requirements import RequirementInput
 from packages.domain.schemas.responses import CandidateGenerationResponse, JobDetailResponse
+from packages.domain.schemas.common import JobStatus
 from packages.domain.services.pipeline import run_generation_pipeline
 
 router = APIRouter(prefix="/v1", tags=["candidates"])
@@ -37,3 +38,50 @@ def job_status(id: str):
         raise HTTPException(status_code=404, detail="job not found")
     result = CandidateGenerationResponse(**job["result"]) if job.get("result") else None
     return JobDetailResponse(schema_version="2.0", id=id, status=job["status"], progress=job["progress"], created_at=job["created_at"], updated_at=job["updated_at"], completed_at=job["completed_at"], error=job["error"], result=result, review=job.get("review"), report=job.get("report"))
+
+
+@router.post('/jobs/{id}/approve')
+def approve_job(id: str, note: str = "", reason: str = ""):
+    job = repo.get(id)
+    if not job:
+        raise HTTPException(404, "job not found")
+    if job["status"] != JobStatus.awaiting_review.value:
+        raise HTTPException(409, "invalid transition")
+    repo.update(id, status=JobStatus.approved.value, review={"status": "approved", "note": note, "reason": reason})
+    return {"id": id, "status": "approved"}
+
+
+@router.post('/jobs/{id}/reject')
+def reject_job(id: str, reason: str, rerun_hint: str = ""):
+    job = repo.get(id)
+    if not job:
+        raise HTTPException(404, "job not found")
+    if job["status"] != JobStatus.awaiting_review.value:
+        raise HTTPException(409, "invalid transition")
+    if not reason:
+        raise HTTPException(400, "reason required")
+    repo.update(id, status=JobStatus.rejected.value, review={"status": "rejected", "reason": reason, "rerun_hint": rerun_hint})
+    return {"id": id, "status": "rejected"}
+
+
+@router.get('/jobs/{id}/design-review-package')
+def design_review_package(id: str):
+    job = repo.get(id)
+    if not job:
+        raise HTTPException(404, "job not found")
+    if job["status"] != JobStatus.approved.value:
+        raise HTTPException(409, "only approved jobs can be exported")
+    result = job.get("result") or {}
+    return {
+        "job_id": id,
+        "ranked_candidates": result.get("candidates", []),
+        "assumptions": result.get("assumptions", {}),
+        "risk_flags": [c.get("risk_flags", []) for c in result.get("candidates", [])],
+        "sensitivity": [c.get("robustness") for c in result.get("candidates", [])],
+        "simulation_summary": [c.get("simulation_summary") for c in result.get("candidates", [])],
+        "cad_handoff_artifact_refs": [c.get("cad_artifact_ref") for c in result.get("candidates", [])],
+        "sourcing_highlights": [c.get("score_breakdown", {}).get("sourcing_risk") for c in result.get("candidates", [])],
+        "lead_time_highlights": [c.get("score_breakdown", {}).get("lead_time_impact") for c in result.get("candidates", [])],
+        "approval_status": job.get("review", {}).get("status"),
+        "reviewer_notes": job.get("review"),
+    }
