@@ -18,7 +18,7 @@ def _objective_weights(objective: str):
     return {"lead_time": 0.2, "sourcing_risk": 0.2, "cost": 0.25, "fit": 0.35}
 
 
-def score_candidate(candidate, priorities, objective="balanced"):
+def score_candidate(candidate, priorities, objective="balanced", physics_margins=None, structural_limits=None):
     efficiency_raw = candidate["efficiency"]
     cost_raw = candidate["total_cost"]
     compact_raw = candidate["total_mass"]
@@ -33,6 +33,9 @@ def score_candidate(candidate, priorities, objective="balanced"):
     fit_n = efficiency_n * priorities.efficiency + compact_n * priorities.compactness + perf_n * priorities.performance_margin
     lead_n = 1.0 / max(1.0, lead_raw / 7.0)
     source_n = max(0.0, min(1.0, 1.0 - source_raw))
+    structural_sf = float((physics_margins or {}).get("structural_safety_factor_proxy", 1.0))
+    min_sf = float((structural_limits or {}).get("min_structural_safety_factor_proxy", 1.0))
+    structural_n = max(0.0, min(1.0, structural_sf / min_sf)) if min_sf > 0 else 0.0
 
     ow = _objective_weights(objective)
     total = fit_n * ow["fit"] + lead_n * ow["lead_time"] + source_n * ow["sourcing_risk"] + cost_n * ow["cost"]
@@ -45,6 +48,7 @@ def score_candidate(candidate, priorities, objective="balanced"):
         "lead_time_impact": _dimension(lead_raw, lead_n, ow["lead_time"]),
         "sourcing_risk": _dimension(source_raw, source_n, ow["sourcing_risk"]),
         "engineering_fit": _dimension(fit_n, fit_n, ow["fit"]),
+        "physics_structural_margin": _dimension(structural_sf, structural_n, 0.0),
     }
 
 

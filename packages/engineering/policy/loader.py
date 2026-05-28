@@ -17,11 +17,17 @@ class WeightPerturbation(BaseModel):
     samples: int = Field(ge=5, le=1000)
 
 
+class StructuralLimits(BaseModel):
+    max_deflection_mm: float = Field(gt=0)
+    min_structural_safety_factor_proxy: float = Field(gt=0)
+
+
 class Policy(BaseModel):
     version: str
     risk_thresholds: RiskThresholds
     topology_thresholds: dict[str, dict[str, float]] = Field(default_factory=dict)
     weight_perturbation: WeightPerturbation
+    structural_limits: StructuralLimits
 
 
 @lru_cache(maxsize=4)

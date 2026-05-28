@@ -66,7 +66,13 @@ def run_generation_pipeline(req, *, allowed_topologies=None, excluded_topologies
             for w in physics.warnings:
                 if str(w.code).startswith("risk_"):
                     risks.append(RiskFlag(code=w.code, message=w.message, severity=w.severity))
-            score = score_candidate(r, normalized.priorities, getattr(req, "decision_objective", "balanced"))
+            score = score_candidate(
+                r,
+                normalized.priorities,
+                getattr(req, "decision_objective", "balanced"),
+                physics_margins=physics.margins.model_dump(),
+                structural_limits=policy.structural_limits.model_dump(),
+            )
             confidence = compute_confidence(1, r["torque_margin"] < 0.2, not r["motor"].get("vendor"))
             sim_sum = sim.run({"duty_cycle": normalized.functional_targets.duty_cycle, "torque_margin": r["torque_margin"], "achievable_speed": r["achievable_speed"], "required_speed": normalized.functional_targets.max_speed.value}) if sim else {"status": "skipped", "warning": "disabled"}
             cad_ref = cad.build({"components": {"motor": r["motor"]["id"], "drive": r["drive"]["id"], "transmission": r["transmission"]["id"]}}) if cad else {"status": "skipped", "warning": "disabled"}
