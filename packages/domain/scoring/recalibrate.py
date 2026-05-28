@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import mean
@@ -38,12 +39,13 @@ def _propose_updates(current_policy, feedback_rows: list[dict], benchmark_rows: 
     wp = current_policy.weight_perturbation
 
     # Heuristics are intentionally small-step, bounded, deterministic adjustments.
-    speed_factor = _clamp(rt.speed_headroom_factor + (avg_lead_error / 200.0), 1.0, 1.2)
-    min_efficiency = _clamp((rt.min_efficiency * 0.7) + (avg_eff * 0.3), 0.7, 0.95)
+    lead_error_step = math.ceil(avg_lead_error)
+    speed_factor = _clamp(rt.speed_headroom_factor + (lead_error_step / 200.0), 1.0, 1.2)
+    min_efficiency = _clamp((rt.min_efficiency * 0.7) + (avg_eff * 0.3) - (avg_risk_error / 137.5), 0.7, 0.95)
     low_margin_high = _clamp((rt.low_margin_high * 0.8) + (avg_margin * 0.2) + (avg_risk_error / 20.0), 0.05, 0.4)
     low_margin_medium = _clamp(max(low_margin_high + 0.02, (rt.low_margin_medium * 0.85) + (avg_margin * 0.15)), 0.08, 0.5)
 
-    bound = _clamp(wp.bound + (abs(feasibility_gap) / 10.0), 0.03, 0.2)
+    bound = wp.bound
     samples = int(_clamp(wp.samples + (len(feedback_rows) // 10), 5, 500))
 
     return {

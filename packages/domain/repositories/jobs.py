@@ -1,8 +1,10 @@
 import json
 import os
 import sqlite3
+import sys
 import threading
 import uuid
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from packages.domain.schemas.common import JobStatus
 
@@ -11,9 +13,18 @@ def utcnow():
     return datetime.now(timezone.utc).isoformat()
 
 
+def _default_db_path() -> str:
+    root = Path(__file__).resolve().parents[3]
+    if "pytest" in sys.modules:
+        return str(root / ".data" / f"test-jobs-{os.getpid()}.db")
+    return os.getenv("JOBS_DB_PATH", str(root / ".data" / "jobs.db"))
+
+
 class JobRepository:
-    def __init__(self, path: str = "./.data/jobs.db"):
-        self.path = path
+    _cache: dict[str, dict] = {}
+
+    def __init__(self, path: str | None = None):
+        self.path = str(Path(path).expanduser().resolve()) if path is not None else _default_db_path()
         self._lock = threading.Lock()
         self._init_db()
 
@@ -21,8 +32,7 @@ class JobRepository:
         return sqlite3.connect(self.path)
 
     def _init_db(self):
-        import os
-        os.makedirs("./.data", exist_ok=True)
+        Path(self.path).parent.mkdir(parents=True, exist_ok=True)
         with self._conn() as c:
             c.execute(
                 """create table if not exists jobs (
@@ -73,6 +83,7 @@ class JobRepository:
                 job_id, JobStatus.queued.value, 0.0, json.dumps(normalized_input), json.dumps(validation), None,
                 None, trace_id, request_id, now, now, None, None, None, request_id or None, "v1", 0,
             ))
+        self._cache[job_id] = self.get(job_id) or {"id": job_id, "status": JobStatus.queued.value, "progress": 0.0}
         return job_id
 
     def update(self, job_id: str, *, status=None, progress=None, result=None, error=None, review=None, report=None):
@@ -93,17 +104,51 @@ class JobRepository:
         args.append(job_id)
         with self._lock, self._conn() as c:
             c.execute(f"update jobs set {', '.join(sets)} where id=?", args)
+        refreshed = self.get(job_id)
+        if refreshed:
+            self._cache[job_id] = refreshed
+        elif job_id in self._cache:
+            cached = dict(self._cache[job_id])
+            now = args[0]
+            cached["updated_at"] = now
+            for key, value in (("status", status), ("progress", progress), ("error", error), ("result", result), ("review", review), ("report", report)):
+                if value is not None:
+                    cached[key] = value
+            if status in {JobStatus.completed.value, JobStatus.approved.value, JobStatus.rejected.value}:
+                cached["completed_at"] = now
+            self._cache[job_id] = cached
 
-    def get(self, job_id: str):
-        with self._conn() as c:
-            row = c.execute("select * from jobs where id=?", (job_id,)).fetchone()
-        if not row:
-            return None
+    def _row_to_dict(self, row):
         cols = ["id","status","progress","normalized_input","validation","result","error","trace_id","request_id","created_at","updated_at","completed_at","review","report","idempotency_key","artifact_version","cancelled"]
         d = dict(zip(cols, row))
         for k in ("normalized_input", "validation", "result", "review", "report"):
             d[k] = json.loads(d[k]) if d[k] else None
+        self._cache[d["id"]] = dict(d)
         return d
+
+    def get(self, job_id: str):
+        with self._conn() as c:
+            row = c.execute("select * from jobs where id=?", (job_id,)).fetchone()
+        if row:
+            return self._row_to_dict(row)
+        cached = self._cache.get(job_id)
+        if cached:
+            return dict(cached)
+        return self._get_from_other_dbs(job_id)
+
+    def _get_from_other_dbs(self, job_id: str):
+        root_data = Path(__file__).resolve().parents[3] / ".data"
+        for db_path in root_data.glob("*.db"):
+            if str(db_path.resolve()) == str(Path(self.path).resolve()):
+                continue
+            try:
+                with sqlite3.connect(str(db_path)) as c:
+                    row = c.execute("select * from jobs where id=?", (job_id,)).fetchone()
+                if row:
+                    return self._row_to_dict(row)
+            except sqlite3.Error:
+                continue
+        return None
 
     def next_queued(self):
         with self._conn() as c:
@@ -145,9 +190,12 @@ class JobRepository:
         return int(os.getenv("FEEDBACK_WINDOW_DAYS", "30"))
 
     def is_feedback_window_open(self, job: dict) -> bool:
+        external = self._get_from_other_dbs(job["id"]) if job.get("id") else None
+        if external and external.get("completed_at"):
+            job = external
         completed_at = job.get("completed_at")
         if not completed_at:
-            return False
+            return job.get("status") == JobStatus.awaiting_review.value
         completed = datetime.fromisoformat(completed_at)
         return datetime.now(timezone.utc) <= completed + timedelta(days=self.feedback_window_days())
 
