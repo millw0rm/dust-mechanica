@@ -137,3 +137,210 @@ For each final recommendation, store:
 4. Integrate optimization and Pareto output
 5. Add verification checklist + risk register
 6. Add report generation with full traceability
+
+## Agent Handoff State Machine and Retry Policy
+
+### State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> INTAKE_RECEIVED
+    INTAKE_RECEIVED --> REQUIREMENTS_NORMALIZED: parse + unit normalization
+    REQUIREMENTS_NORMALIZED --> NEEDS_CLARIFICATION: missing/contradictory fields
+    NEEDS_CLARIFICATION --> REQUIREMENTS_NORMALIZED: user resolves questions
+    REQUIREMENTS_NORMALIZED --> REQUIREMENTS_APPROVAL_GATE: constraints complete
+
+    REQUIREMENTS_APPROVAL_GATE --> SYNTHESIS_RUNNING: gate approved
+    REQUIREMENTS_APPROVAL_GATE --> HARD_STOP: gate rejected or stale
+
+    SYNTHESIS_RUNNING --> FEASIBILITY_FILTERED: candidates generated + screened
+    FEASIBILITY_FILTERED --> SHORTLIST_APPROVAL_GATE: top-N candidates selected
+    SHORTLIST_APPROVAL_GATE --> OPTIMIZATION_RUNNING: gate approved
+    SHORTLIST_APPROVAL_GATE --> HARD_STOP: gate rejected
+
+    OPTIMIZATION_RUNNING --> SIMULATION_RUNNING: feasible Pareto points selected
+    SIMULATION_RUNNING --> VERIFICATION_RUNNING: KPIs available
+    VERIFICATION_RUNNING --> SAFETY_APPROVAL_GATE: checks complete
+
+    SAFETY_APPROVAL_GATE --> REPORT_GENERATION: gate approved
+    SAFETY_APPROVAL_GATE --> HARD_STOP: unresolved risks/compliance
+
+    REPORT_GENERATION --> FINAL_SIGNOFF_GATE: sign-off bundle assembled
+    FINAL_SIGNOFF_GATE --> RELEASE_READY: approval recorded
+    FINAL_SIGNOFF_GATE --> HARD_STOP: approval denied/expired
+
+    HARD_STOP --> [*]
+    RELEASE_READY --> [*]
+```
+
+### Retry Policy (Per State Transition)
+- **Retry budget:** `max_retries_per_step = 2` for deterministic failures (timeouts, transient API 5xx, queue saturation), then escalate.
+- **Backoff:** exponential `2^n` seconds with jitter in `[0, 500ms]`.
+- **Idempotency key:** every retried action uses a stable `event_id` + `step_id` to prevent duplicate artifacts.
+- **Retryable classes:**
+  - tool/network transient failures
+  - solver worker preemption
+  - temporary model endpoint unavailability
+- **Non-retryable classes (immediate hard stop):**
+  - schema/constraint validation failures
+  - policy/compliance ambiguity
+  - low-confidence outputs below threshold with no new evidence
+- **Escalation rule:** after budget exhaustion, transition to `HARD_STOP` with `escalation_reason` and required human action.
+
+## Hard Stop Conditions
+
+The orchestration layer must transition to `HARD_STOP` (no autonomous progression) under any of the following:
+
+1. **Missing constraints**
+   - Required safety/load/compliance constraint fields absent after clarification loop.
+   - Conflicting constraints that cannot be reconciled (e.g., impossible envelope + load target).
+2. **Low confidence**
+   - Agent output confidence below configured threshold and no independent corroboration.
+   - High disagreement between analytical and simulation tiers beyond tolerance.
+3. **Compliance ambiguity**
+   - Unknown jurisdiction/standard mapping for required checks.
+   - Verification agent cannot map evidence to mandatory checklist controls.
+
+**Hard-stop artifact requirements:**
+- machine-readable stop code (`HARDSTOP_*`)
+- human-readable rationale
+- blocking fields/checklist items
+- recommended remediation questions/actions
+
+## Human Approval Gates and Required Artifacts
+
+| Gate | Trigger | Approver | Required Artifacts |
+|---|---|---|---|
+| G1: Requirement Freeze | all mandatory fields present | Product + Lead Engineer | requirement snapshot, assumptions list, unresolved questions = 0 |
+| G2: Candidate Shortlist | feasibility-filter complete | Lead Engineer | ranked candidates, rejection reasons, cost/performance tradeoff table |
+| G3: Safety/Verification | verification checks complete | Safety/Compliance Engineer | checklist pass/fail, risk register, compliance mapping evidence |
+| G4: Final Sign-off | report package assembled | Engineering Manager | sign-off bundle, decision log, release constraints, rollback/next-step plan |
+
+**Gate policy controls:**
+- Approvals are versioned and time-bound (`approval_ttl`).
+- Any material input change invalidates downstream approvals and forces re-gating.
+- No bypass path exists from pre-gate to post-gate states.
+
+## Trace/Event Schema
+
+Canonical event schema for all agent/tool actions:
+
+```json
+{
+  "event_id": "uuid",
+  "run_id": "uuid",
+  "step_id": "string",
+  "parent_event_id": "uuid|null",
+  "timestamp_utc": "2026-05-28T12:34:56Z",
+  "who": {
+    "actor_type": "agent|tool|human",
+    "actor_id": "string",
+    "actor_version": "string"
+  },
+  "what": {
+    "action": "string",
+    "state_from": "string|null",
+    "state_to": "string|null",
+    "policy_checks": ["string"],
+    "tags": ["handoff", "retry", "approval"]
+  },
+  "when": {
+    "latency_ms": 0,
+    "attempt": 1,
+    "retry_of": "event_id|null"
+  },
+  "inputs": {
+    "references": ["artifact://..."],
+    "hashes": ["sha256:..."],
+    "parameters": {}
+  },
+  "outputs": {
+    "references": ["artifact://..."],
+    "summary": "string",
+    "status": "ok|warning|error"
+  },
+  "confidence": {
+    "score": 0.0,
+    "method": "self_eval|ensemble|calibrated_model",
+    "threshold": 0.0,
+    "decision": "accept|review|reject"
+  }
+}
+```
+
+### Minimum Required Fields by the Requested Dimensions
+- **who:** `actor_type`, `actor_id`, `actor_version`
+- **what:** `action`, `state_from`, `state_to`, `policy_checks`
+- **when:** `timestamp_utc`, `latency_ms`, `attempt`
+- **inputs:** artifact references + immutable hashes
+- **outputs:** artifact references + status + summary
+- **confidence:** numeric score + threshold + decision
+
+## Determinism Controls
+
+1. **Seed control**
+   - Persist global run seed and per-step derived seeds (`seed_step = H(run_seed, step_id)`).
+   - Require seed capture for all stochastic tools/solvers.
+2. **Model/version pinning**
+   - Pin model ID, provider, endpoint version, and prompt template version per step.
+   - Block mixed-version comparisons unless explicitly marked exploratory.
+3. **Replay capability**
+   - Store complete event log + artifacts + config snapshots.
+   - Support deterministic replay mode that reuses pinned versions, seeds, and inputs.
+   - Produce replay diff report: output hashes, KPI deltas, and decision divergence.
+
+## End-to-End Sequence (Input to Sign-off Bundle)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant O as Orchestrator
+    participant R as Requirement Agent
+    participant C as Concept Agent
+    participant S as Simulation Agent
+    participant V as Verification Agent
+    participant H as Human Approver
+    participant A as Audit Store
+
+    U->>O: Submit design request + constraints
+    O->>R: Normalize requirements
+    R-->>O: RequirementSpec + confidence + missing flags
+    O->>A: Write trace event (intake/normalize)
+
+    alt Missing/contradictory constraints
+        O->>U: Clarification questions
+        U-->>O: Constraint updates
+        O->>R: Re-validate
+        R-->>O: Updated RequirementSpec
+    end
+
+    O->>H: G1 approval request (Requirement Freeze)
+    H-->>O: Approve G1
+    O->>A: Record approval artifact
+
+    O->>C: Generate candidates
+    C-->>O: Ranked candidates + assumptions
+    O->>A: Write synthesis events
+
+    O->>H: G2 approval request (Shortlist)
+    H-->>O: Approve G2
+
+    O->>S: Run feasibility + simulation tiers
+    S-->>O: KPIs + uncertainty tags
+    O->>V: Run verification/compliance checks
+    V-->>O: Checklist + risk register + confidence
+
+    alt Low confidence or compliance ambiguity
+        O->>A: Emit HARD_STOP event + remediation
+        O-->>U: Stop and request human resolution
+    else Checks acceptable
+        O->>H: G3 safety approval request
+        H-->>O: Approve G3
+        O->>O: Assemble sign-off bundle
+        O->>H: G4 final sign-off request
+        H-->>O: Approve G4
+        O->>A: Persist final bundle + immutable trace
+        O-->>U: Release-ready recommendation package
+    end
+```
