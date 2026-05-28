@@ -3,22 +3,29 @@ from __future__ import annotations
 from packages.domain.physics.checks import ball_screw, belt_axis, direct_drive
 
 
+TOPOLOGY_ALIASES = {
+    "belt_axis": "belt_axis",
+    "belt-driven-linear-axis": "belt_axis",
+    "ball_screw": "ball_screw",
+    "ball-screw-linear-axis": "ball_screw",
+    "direct_drive": "direct_drive",
+    "direct-drive-rotary-axis": "direct_drive",
+}
+
 TOPOLOGY_CHECKS = {
     "belt_axis": belt_axis,
-    "belt-driven-linear-axis": belt_axis,
     "ball_screw": ball_screw,
-    "ball-screw-linear-axis": ball_screw,
     "direct_drive": direct_drive,
-    "direct-drive-rotary-axis": direct_drive,
 }
 
 
 def topology_id(candidate: dict) -> str | None:
+    """Return the canonical topology family used by policy thresholds/checks."""
     topology = candidate.get("topology")
-    if topology in TOPOLOGY_CHECKS:
-        return topology
+    if topology in TOPOLOGY_ALIASES:
+        return TOPOLOGY_ALIASES[topology]
     candidate_id = str(candidate.get("id", ""))
-    for key in ("belt_axis", "ball_screw", "direct_drive"):
+    for key in TOPOLOGY_CHECKS:
         if candidate_id.startswith(f"{key}-"):
             return key
     return None
