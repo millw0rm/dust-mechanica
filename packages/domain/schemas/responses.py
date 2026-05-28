@@ -18,6 +18,7 @@ class CandidateGenerationResponse(BaseModel):
     missing: list[str] = Field(default_factory=list)
     conflicts: list[str] = Field(default_factory=list)
     assumptions: dict
+    policy_version: str = "v1"
 
 
 class JobDetailResponse(BaseModel):
@@ -30,3 +31,5 @@ class JobDetailResponse(BaseModel):
     completed_at: str | None = None
     error: str | None = None
     result: CandidateGenerationResponse | None = None
+    review: dict | None = None
+    report: dict | None = None

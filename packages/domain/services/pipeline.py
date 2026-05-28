@@ -3,6 +3,8 @@ from packages.domain.schemas.candidate import Candidate, Components, Performance
 from packages.domain.schemas.common import Confidence, RiskFlag
 from packages.domain.synthesis.generate import generate_belt_axis_candidates
 from packages.domain.scoring.score import score_candidate, rank_candidates
+from packages.domain.scoring.sensitivity import assess_ranking_robustness
+from packages.engineering.policy.loader import load_policy
 from packages.engineering.validation import validate_requirement
 
 
@@ -19,6 +21,7 @@ def run_generation_pipeline(req):
     raw = generate_belt_axis_candidates(normalized, catalog)
     feasible = [r for r in raw if r["feasible"]]
     out = []
+    policy = load_policy("v1")
     assumptions = {
         "selected_topology_rationale": "belt topology selected for linear-axis simplicity and catalog availability",
         "derating_assumptions": "duty-cycle derating applied to torque availability",
@@ -26,11 +29,11 @@ def run_generation_pipeline(req):
     }
     for r in feasible:
         risks = []
-        if r["torque_margin"] < 0.15:
+        if r["torque_margin"] < policy.risk_thresholds.low_margin_high:
             risks.append(RiskFlag(code="LOW_MARGIN", message="Near torque limit", severity="high"))
-        if r["achievable_speed"] < normalized.functional_targets.max_speed.value * 1.05:
+        if r["achievable_speed"] < normalized.functional_targets.max_speed.value * policy.risk_thresholds.speed_headroom_factor:
             risks.append(RiskFlag(code="SPEED_HEADROOM_LOW", message="Near speed limit", severity="medium"))
-        if r["efficiency"] < 0.85:
+        if r["efficiency"] < policy.risk_thresholds.min_efficiency:
             risks.append(RiskFlag(code="THERMAL_HEADROOM_LOW", message="Lower efficiency can increase thermal load", severity="medium"))
         if not r["motor"].get("vendor"):
             risks.append(RiskFlag(code="UNCERTAIN_CATALOG_DATA", message="Catalog metadata incomplete", severity="low"))
@@ -43,4 +46,7 @@ def run_generation_pipeline(req):
             score_breakdown=ScoreBreakdown(**score), risk_flags=risks, confidence=confidence, feasible=True,
         ))
     ranked = rank_candidates([c.model_dump() for c in out])
-    return {"normalized": normalized.model_dump(), "issues": v["issues"], "missing": v["missing"], "conflicts": v["conflicts"], "candidates": ranked, "assumptions": assumptions}
+    robustness = assess_ranking_robustness(ranked, normalized.priorities, bound=policy.weight_perturbation.bound, samples=policy.weight_perturbation.samples)
+    for cand in ranked:
+        cand["robustness"] = {"level": robustness["level"], "volatility_index": robustness["volatility_index"]}
+    return {"normalized": normalized.model_dump(), "issues": v["issues"], "missing": v["missing"], "conflicts": v["conflicts"], "candidates": ranked, "assumptions": assumptions, "policy_version": policy.version}

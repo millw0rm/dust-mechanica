@@ -36,3 +36,6 @@ class JobStatus(str, Enum):
     running = "running"
     failed = "failed"
     completed = "completed"
+    awaiting_review = "awaiting_review"
+    approved = "approved"
+    rejected = "rejected"
