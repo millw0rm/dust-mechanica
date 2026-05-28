@@ -8,7 +8,6 @@ from typing import Any
 
 from packages.engineering.adapters.artifacts.base import ArtifactStore
 
-
 RUNNER_VERSION = "freecad-runner-v1"
 
 
@@ -28,7 +27,9 @@ class FreeCADRunner:
 
     def run(self, tool_run: dict[str, Any]) -> dict[str, Any]:
         if tool_run.get("tool") != "FreeCAD":
-            return self._failed("FreeCADRunner only accepts tool_run contracts for tool='FreeCAD'.")
+            return self._failed(
+                "FreeCADRunner only accepts tool_run contracts for tool='FreeCAD'."
+            )
 
         executable = self._available_executable()
         if executable is None:
@@ -43,8 +44,19 @@ class FreeCADRunner:
             "assembly_checks": self.artifact_store.put_json(
                 "toolchain", fingerprint, "freecad", "assembly-checks.json", metadata
             ),
+            "drawing_handoff": self.artifact_store.put_json(
+                "toolchain",
+                fingerprint,
+                "freecad",
+                "drawing-handoff.json",
+                metadata["drawing_handoff"],
+            ),
             "macro": self.artifact_store.put_bytes(
-                "toolchain", fingerprint, "freecad", "assembly_handoff.FCMacro", self._macro_bytes(metadata)
+                "toolchain",
+                fingerprint,
+                "freecad",
+                "assembly_handoff.FCMacro",
+                self._macro_bytes(metadata),
             ),
         }
         return {
@@ -53,7 +65,11 @@ class FreeCADRunner:
             "warnings": metadata["warnings"],
             "runner_version": self.runner_version,
             "availability": {"available": True, "executable": executable},
-            "metadata": {"check_count": len(metadata["checks"]), "step_uri": metadata.get("step_uri")},
+            "metadata": {
+                "check_count": len(metadata["checks"]),
+                "step_uri": metadata.get("step_uri"),
+                "drawing_handoff": metadata["drawing_handoff"],
+            },
         }
 
     def _available_executable(self) -> str | None:
@@ -69,7 +85,10 @@ class FreeCADRunner:
             "artifact_uris": {},
             "warnings": [warning],
             "runner_version": self.runner_version,
-            "availability": {"available": False, "checked": list(self.executable_names)},
+            "availability": {
+                "available": False,
+                "checked": list(self.executable_names),
+            },
         }
 
     def _failed(self, warning: str) -> dict[str, Any]:
@@ -87,27 +106,86 @@ class FreeCADRunner:
         raw = json.dumps(tool_run, sort_keys=True, default=str, separators=(",", ":"))
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 
-    def _assembly_metadata(self, feed: dict[str, Any], executable: str) -> dict[str, Any]:
-        upstream = feed.get("upstream_artifact_uris") if isinstance(feed.get("upstream_artifact_uris"), dict) else {}
-        cadquery_artifacts = upstream.get("CadQuery") if isinstance(upstream.get("CadQuery"), dict) else {}
-        step_uri = cadquery_artifacts.get("step") or feed.get("step_uri") or feed.get("geometry_uri")
-        components = feed.get("components") if isinstance(feed.get("components"), dict) else {}
+    def _assembly_metadata(
+        self, feed: dict[str, Any], executable: str
+    ) -> dict[str, Any]:
+        upstream = (
+            feed.get("upstream_artifact_uris")
+            if isinstance(feed.get("upstream_artifact_uris"), dict)
+            else {}
+        )
+        cadquery_artifacts = (
+            upstream.get("CadQuery")
+            if isinstance(upstream.get("CadQuery"), dict)
+            else {}
+        )
+        step_uri = (
+            cadquery_artifacts.get("step")
+            or feed.get("step_uri")
+            or feed.get("geometry_uri")
+        )
+        stl_uri = cadquery_artifacts.get("stl") or feed.get("stl_uri")
+        components = (
+            feed.get("components") if isinstance(feed.get("components"), dict) else {}
+        )
+        envelope = self._first_dict(feed.get("envelope"), feed.get("cad_artifact_ref"))
         warnings = []
         if not step_uri:
-            warnings.append("No CadQuery STEP artifact URI was provided; assembly metadata records a pending geometry input.")
+            warnings.append(
+                "No CadQuery STEP artifact URI was provided; assembly metadata records a pending geometry input."
+            )
+        drawing_handoff = {
+            "source_step_uri": step_uri,
+            "reference_stl_uri": stl_uri,
+            "assembly_document": "dust_mechanica_assembly.FCStd",
+            "drawing_package": "dust_mechanica_techdraw.pdf",
+            "views": ["front", "top", "right", "isometric"],
+            "formats": ["FCStd", "PDF", "DXF"],
+            "title_block": {
+                "project": "dust-mechanica",
+                "topology": feed.get("topology"),
+                "input_fingerprint": feed.get("input_fingerprint"),
+            },
+            "notes": [
+                "Import source STEP into FreeCAD Part workbench.",
+                "Attach purchased components using the component map before releasing drawings.",
+                "Generate TechDraw sheets from the named views after constraints are verified.",
+            ],
+        }
         checks = [
-            {"name": "step_import", "status": "ready" if step_uri else "pending", "input_uri": step_uri},
-            {"name": "component_placeholders", "status": "ready", "component_count": len(components)},
-            {"name": "drawing_handoff", "status": "ready", "format": "TechDraw-compatible metadata"},
+            {
+                "name": "step_import",
+                "status": "ready" if step_uri else "pending",
+                "input_uri": step_uri,
+            },
+            {
+                "name": "component_placeholders",
+                "status": "ready",
+                "component_count": len(components),
+            },
+            {
+                "name": "drawing_handoff",
+                "status": "ready",
+                "format": "TechDraw-compatible metadata",
+            },
         ]
         return {
             "runner_version": self.runner_version,
             "freecad_executable": executable,
             "step_uri": step_uri,
+            "stl_uri": stl_uri,
+            "envelope": envelope,
             "components": components,
             "checks": checks,
+            "drawing_handoff": drawing_handoff,
             "warnings": warnings,
         }
+
+    def _first_dict(self, *values: Any) -> dict[str, Any]:
+        for value in values:
+            if isinstance(value, dict):
+                return value
+        return {}
 
     def _macro_bytes(self, metadata: dict[str, Any]) -> bytes:
         lines = [

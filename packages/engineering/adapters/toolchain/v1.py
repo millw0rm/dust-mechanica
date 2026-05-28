@@ -106,7 +106,9 @@ class OpenSourceToolchainAdapterV1:
         cad_artifact_ref: dict | None = None,
         physics_summary: dict | None = None,
     ) -> dict:
-        normalized_payload = normalized.model_dump() if hasattr(normalized, "model_dump") else normalized
+        normalized_payload = (
+            normalized.model_dump() if hasattr(normalized, "model_dump") else normalized
+        )
         feed = {
             "requirement": normalized_payload,
             "candidate": self._candidate_payload(candidate),
@@ -117,7 +119,11 @@ class OpenSourceToolchainAdapterV1:
         fingerprint = self._fingerprint(feed)
         topology = candidate.get("topology", "unknown")
         transmission = candidate.get("transmission", {})
-        transmission_kind = transmission.get("kind") or transmission.get("type") or transmission.get("id", "")
+        transmission_kind = (
+            transmission.get("kind")
+            or transmission.get("type")
+            or transmission.get("id", "")
+        )
 
         runs = [
             self._run_contract(
@@ -219,11 +225,20 @@ class OpenSourceToolchainAdapterV1:
             "adapter_version": self.adapter_version,
             "status": "planned",
             "input_fingerprint": fingerprint,
-            "evaluated_tools": [self._capability_payload(tool) for tool in TOOL_CAPABILITIES],
+            "evaluated_tools": [
+                self._capability_payload(tool) for tool in TOOL_CAPABILITIES
+            ],
             "tool_runs": runs,
-            "handoff_order": [run["tool"] for run in sorted(runs, key=lambda item: item["priority"])],
+            "handoff_order": [
+                run["tool"] for run in sorted(runs, key=lambda item: item["priority"])
+            ],
             "result_contract": {
-                "primary_outputs": ["cad_artifacts", "simulation_kpis", "optimization_trace", "review_notes"],
+                "primary_outputs": [
+                    "cad_artifacts",
+                    "simulation_kpis",
+                    "optimization_trace",
+                    "review_notes",
+                ],
                 "execution_mode": "plan_only_until_external_runners_are_configured",
                 "next_step": "Attach concrete runners for the selected tool_runs and persist returned artifact URIs.",
             },
@@ -246,12 +261,19 @@ class OpenSourceToolchainAdapterV1:
             "topology": feed["candidate"].get("topology"),
             "components": feed["candidate"].get("components"),
             "performance": feed["candidate"].get("performance"),
+            "constraints": self._requirement_section(feed, "constraints"),
+            "envelope": self._requirement_section(feed, "envelope"),
+            "load_cases": self._load_cases(feed),
+            "design_variables": self._design_variables(feed),
+            "cad_artifact_ref": feed.get("cad_artifact_ref", {}),
             "physics_margins": feed.get("physics_summary", {}).get("margins", {}),
         }
         artifact_uris = {
             "directory": f"artifact://toolchain/{fingerprint}/{slug}",
             "feed": self._artifact_uri(fingerprint, slug, "feed.json"),
-            "runner_contract": self._artifact_uri(fingerprint, slug, "runner-contract.json"),
+            "runner_contract": self._artifact_uri(
+                fingerprint, slug, "runner-contract.json"
+            ),
         }
         contract = {
             "tool": tool_name,
@@ -267,15 +289,86 @@ class OpenSourceToolchainAdapterV1:
             "maturity": capability.maturity,
         }
         if self.artifact_store is not None:
-            artifact_uris["feed"] = self.artifact_store.put_json("toolchain", fingerprint, slug, "feed.json", run_feed)
+            artifact_uris["feed"] = self.artifact_store.put_json(
+                "toolchain", fingerprint, slug, "feed.json", run_feed
+            )
             artifact_uris["runner_contract"] = self.artifact_store.put_json(
                 "toolchain",
                 fingerprint,
                 slug,
                 "runner-contract.json",
-                {key: value for key, value in contract.items() if key != "artifact_uris"},
+                {
+                    key: value
+                    for key, value in contract.items()
+                    if key != "artifact_uris"
+                },
             )
         return contract
+
+    def _requirement_section(self, feed: dict, key: str) -> dict:
+        requirement = (
+            feed.get("requirement") if isinstance(feed.get("requirement"), dict) else {}
+        )
+        value = requirement.get(key)
+        return value if isinstance(value, dict) else {}
+
+    def _load_cases(self, feed: dict) -> list[dict[str, Any]]:
+        physics_summary = (
+            feed.get("physics_summary")
+            if isinstance(feed.get("physics_summary"), dict)
+            else {}
+        )
+        raw_cases = physics_summary.get("load_cases") or physics_summary.get("loads")
+        if isinstance(raw_cases, list):
+            return [case for case in raw_cases if isinstance(case, dict)]
+        if isinstance(raw_cases, dict):
+            return [raw_cases]
+        requirement = (
+            feed.get("requirement") if isinstance(feed.get("requirement"), dict) else {}
+        )
+        targets = (
+            requirement.get("functional_targets")
+            if isinstance(requirement.get("functional_targets"), dict)
+            else {}
+        )
+        payload_mass = self._target_value(targets.get("payload_mass"))
+        if payload_mass is None:
+            return []
+        return [
+            {
+                "name": "payload_gravity",
+                "description": "Static payload load derived from functional targets.",
+                "force_n": payload_mass * 9.80665,
+                "load_direction": [0.0, 0.0, -1.0],
+                "constraint": "fixed_base",
+            }
+        ]
+
+    def _design_variables(self, feed: dict) -> dict[str, Any]:
+        candidate = (
+            feed.get("candidate") if isinstance(feed.get("candidate"), dict) else {}
+        )
+        performance = (
+            candidate.get("performance")
+            if isinstance(candidate.get("performance"), dict)
+            else {}
+        )
+        return {
+            "drive_scale": {"baseline": 1.0, "sweep_factors": [0.85, 1.0, 1.15]},
+            "speed_mps": {"baseline": performance.get("achievable_speed_mps")},
+            "mass_kg": {"baseline": performance.get("total_mass_kg")},
+        }
+
+    def _target_value(self, target: Any) -> float | None:
+        if isinstance(target, dict):
+            value = target.get("value")
+        else:
+            value = target
+        if isinstance(value, bool):
+            return None
+        if isinstance(value, (int, float)):
+            return float(value)
+        return None
 
     def _artifact_uri(self, fingerprint: str, slug: str, name: str) -> str:
         return f"artifact://toolchain/{fingerprint}/{slug}/{name}"
@@ -316,4 +409,6 @@ class OpenSourceToolchainAdapterV1:
         return "gear" in haystack or "planetary" in haystack
 
     def _slug(self, value: str) -> str:
-        return "".join(char.lower() if char.isalnum() else "-" for char in value).strip("-")
+        return "".join(char.lower() if char.isalnum() else "-" for char in value).strip(
+            "-"
+        )
