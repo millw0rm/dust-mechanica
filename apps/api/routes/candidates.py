@@ -3,7 +3,7 @@ import sqlite3
 from pydantic import BaseModel
 from packages.domain.repositories.jobs import JobRepository
 from packages.domain.schemas.requirements import RequirementInput
-from packages.domain.schemas.responses import CandidateGenerationResponse, JobDetailResponse, FeedbackRequest
+from packages.domain.schemas.responses import CandidateGenerationResponse, JobDetailResponse, FeedbackRequest, TelemetrySlicesResponse, TelemetryDriftResponse
 from packages.domain.schemas.common import JobStatus
 from packages.domain.services.pipeline import run_generation_pipeline
 
@@ -126,3 +126,19 @@ def submit_feedback(id: str, payload: FeedbackRequest):
 @router.get('/telemetry/summary')
 def telemetry_summary():
     return {"schema_version": "2.1", **repo.feedback_summary()}
+
+
+@router.get('/telemetry/slices', response_model=TelemetrySlicesResponse)
+def telemetry_slices(bucket: str = "daily"):
+    try:
+        slices = repo.telemetry_slices(bucket=bucket)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return TelemetrySlicesResponse(bucket=bucket, slices=slices)
+
+
+@router.get('/telemetry/drift', response_model=TelemetryDriftResponse)
+def telemetry_drift(recent_days: int = 7, baseline_days: int = 28):
+    if recent_days <= 0 or baseline_days <= 0:
+        raise HTTPException(status_code=400, detail="window sizes must be positive")
+    return TelemetryDriftResponse(**repo.telemetry_drift(recent_days=recent_days, baseline_days=baseline_days))
