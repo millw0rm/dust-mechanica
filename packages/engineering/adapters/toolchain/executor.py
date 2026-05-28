@@ -6,6 +6,11 @@ from typing import Any
 from packages.engineering.adapters.artifacts.base import ArtifactStore
 from packages.engineering.adapters.artifacts.local import LocalArtifactStore
 from packages.engineering.adapters.toolchain.runners.cadquery import CadQueryRunner
+from packages.engineering.adapters.toolchain.runners.calculix import (
+    CalculixCodeAsterRunner,
+)
+from packages.engineering.adapters.toolchain.runners.freecad import FreeCADRunner
+from packages.engineering.adapters.toolchain.runners.openmdao import OpenMDAORunner
 
 
 @dataclass
@@ -18,27 +23,57 @@ class ToolchainExecutionService:
     """
 
     artifact_store: ArtifactStore = field(default_factory=LocalArtifactStore)
-    supported_tools: frozenset[str] = frozenset({"CadQuery"})
+    supported_tools: frozenset[str] = frozenset(
+        {"CadQuery", "FreeCAD", "CalculiX / Code_Aster", "OpenMDAO"}
+    )
 
-    def run_selected_tools(self, *, candidate: dict[str, Any], selected_tools: list[str], dry_run: bool = False) -> dict[str, Any]:
+    def run_selected_tools(
+        self,
+        *,
+        candidate: dict[str, Any],
+        selected_tools: list[str],
+        dry_run: bool = False,
+    ) -> dict[str, Any]:
         toolchain_results = candidate.get("toolchain_results") or {}
         tool_runs = toolchain_results.get("tool_runs") or []
-        runs_by_tool = {run.get("tool"): run for run in tool_runs if isinstance(run, dict) and run.get("tool")}
+        runs_by_tool = {
+            run.get("tool"): run
+            for run in tool_runs
+            if isinstance(run, dict) and run.get("tool")
+        }
         executions = []
         upstream_artifact_uris: dict[str, dict[str, Any]] = {}
 
         for tool_name in self._unique(selected_tools):
             tool_run = runs_by_tool.get(tool_name)
             if tool_run is None:
-                executions.append(self._planned_only(tool_name, "No matching tool_run contract exists for this candidate."))
+                executions.append(
+                    self._planned_only(
+                        tool_name,
+                        "No matching tool_run contract exists for this candidate.",
+                    )
+                )
                 continue
             if dry_run:
-                execution = self._planned_only(tool_name, "Dry run requested; execution was planned but not dispatched.", tool_run=tool_run)
+                execution = self._planned_only(
+                    tool_name,
+                    "Dry run requested; execution was planned but not dispatched.",
+                    tool_run=tool_run,
+                )
             elif tool_name not in self.supported_tools:
-                execution = self._unavailable(tool_name, "No concrete runner is configured for this tool yet.", tool_run=tool_run)
+                execution = self._unavailable(
+                    tool_name,
+                    "No concrete runner is configured for this tool yet.",
+                    tool_run=tool_run,
+                )
             else:
-                runnable_tool_run = self._with_upstream_artifacts(tool_run, upstream_artifact_uris)
-                execution = {"tool": tool_name, **CadQueryRunner(self.artifact_store).run(runnable_tool_run)}
+                runnable_tool_run = self._with_upstream_artifacts(
+                    tool_run, upstream_artifact_uris
+                )
+                execution = {
+                    "tool": tool_name,
+                    **self._runner_for(tool_name).run(runnable_tool_run),
+                }
             executions.append(execution)
             if execution.get("artifact_uris"):
                 upstream_artifact_uris[tool_name] = execution["artifact_uris"]
@@ -59,14 +94,31 @@ class ToolchainExecutionService:
             "artifact_uris": artifact_uris,
         }
 
+    def _runner_for(self, tool_name: str):
+        if tool_name == "CadQuery":
+            return CadQueryRunner(self.artifact_store)
+        if tool_name == "FreeCAD":
+            return FreeCADRunner(self.artifact_store)
+        if tool_name == "CalculiX / Code_Aster":
+            return CalculixCodeAsterRunner(self.artifact_store)
+        if tool_name == "OpenMDAO":
+            return OpenMDAORunner(self.artifact_store)
+        raise ValueError(f"No concrete runner is configured for {tool_name!r}.")
+
     def _with_upstream_artifacts(
-        self, tool_run: dict[str, Any], upstream_artifact_uris: dict[str, dict[str, Any]]
+        self,
+        tool_run: dict[str, Any],
+        upstream_artifact_uris: dict[str, dict[str, Any]],
     ) -> dict[str, Any]:
         if not upstream_artifact_uris:
             return tool_run
         runnable_tool_run = dict(tool_run)
         feed = dict(runnable_tool_run.get("feed") or {})
-        existing = feed.get("upstream_artifact_uris") if isinstance(feed.get("upstream_artifact_uris"), dict) else {}
+        existing = (
+            feed.get("upstream_artifact_uris")
+            if isinstance(feed.get("upstream_artifact_uris"), dict)
+            else {}
+        )
         feed["upstream_artifact_uris"] = {**existing, **upstream_artifact_uris}
         runnable_tool_run["feed"] = feed
         return runnable_tool_run
@@ -89,14 +141,22 @@ class ToolchainExecutionService:
             return "unavailable"
         return "partial"
 
-    def _planned_only(self, tool_name: str, reason: str, tool_run: dict[str, Any] | None = None) -> dict[str, Any]:
+    def _planned_only(
+        self, tool_name: str, reason: str, tool_run: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         return self._non_executed(tool_name, "planned_only", reason, tool_run=tool_run)
 
-    def _unavailable(self, tool_name: str, reason: str, tool_run: dict[str, Any] | None = None) -> dict[str, Any]:
+    def _unavailable(
+        self, tool_name: str, reason: str, tool_run: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         return self._non_executed(tool_name, "unavailable", reason, tool_run=tool_run)
 
     def _non_executed(
-        self, tool_name: str, status: str, reason: str, tool_run: dict[str, Any] | None = None
+        self,
+        tool_name: str,
+        status: str,
+        reason: str,
+        tool_run: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         payload = {
             "tool": tool_name,
@@ -106,7 +166,9 @@ class ToolchainExecutionService:
         }
         if tool_run:
             payload["tool_run_status"] = tool_run.get("status")
-            payload["input_fingerprint"] = tool_run.get("input_fingerprint") or (tool_run.get("feed") or {}).get("input_fingerprint")
+            payload["input_fingerprint"] = tool_run.get("input_fingerprint") or (
+                tool_run.get("feed") or {}
+            ).get("input_fingerprint")
         return payload
 
     def _unique(self, values: list[str]) -> list[str]:
