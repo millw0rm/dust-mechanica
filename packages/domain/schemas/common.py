@@ -34,5 +34,5 @@ class RiskFlag(BaseModel):
 class JobStatus(str, Enum):
     queued = "queued"
     running = "running"
-    complete = "complete"
     failed = "failed"
+    completed = "completed"

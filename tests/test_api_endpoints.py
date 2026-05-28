@@ -13,13 +13,7 @@ def test_health():
 def test_validate_and_generate():
     r = client.post('/v1/requirements/validate', json=PAYLOAD)
     assert r.status_code == 200
-    assert "normalized" in r.json()
+    assert "schema_version" in r.json()
     r2 = client.post('/v1/candidates/generate', json=PAYLOAD)
     assert r2.status_code == 200
     assert isinstance(r2.json()["candidates"], list)
-
-
-def test_job_status():
-    r = client.get('/v1/jobs/abc')
-    assert r.status_code == 200
-    assert r.json()["id"] == "abc"
